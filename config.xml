@@ -1,0 +1,11 @@
+<?xml version='1.0' encoding='utf-8'?>
+<root>
+	<log>
+		<level>info</level>
+		<path>./logs</path>
+		<size>0</size>
+		<num>2</num>
+		<out_put_to_file>1</out_put_to_file>
+		<out_put_to_terminate>1</out_put_to_terminate>
+	</log>
+</root>
