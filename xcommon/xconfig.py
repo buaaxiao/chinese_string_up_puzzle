@@ -5,7 +5,7 @@ from xml.dom.minidom import parse
 
 
 class xConfigHandle(object):
-    def __init__(self, filename='./config.xml'):
+    def __init__(self, filename='config.xml'):
         self.filename = filename
         self.domTree = parse(filename)
         # 文档根元素

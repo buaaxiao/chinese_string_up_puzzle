@@ -9,11 +9,13 @@ import sys
 from xcommon.xconfig import xConfigHandle
 from logging.handlers import TimedRotatingFileHandler
 
+progam_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + '/'
+
 
 class xLogger(object):
     def __init__(self, name, config_file='config.xml'):
         cConfigHandle = xConfigHandle(config_file)
-        logpath = cConfigHandle.get_value('log', 'path')
+        logpath = progam_path + cConfigHandle.get_value('log', 'path')
         if not os.path.exists(logpath):
             os.mkdir(logpath)
         # 读取日志文件容量，转换为字节
@@ -30,7 +32,7 @@ class xLogger(object):
         # 读取日志文件保存个数
         # 日志文件名：由用例脚本的名称，结合日志保存路径，得到日志文件的绝对路径
         logname = sys.argv[0].split(
-            '/')[-1].split('.')[0] + datetime.datetime.now().strftime('_%Y_%m_%d_%H_%M_%S_%f') + '.log'
+            '/')[-1].split('.')[0] + datetime.datetime.now().strftime('_%Y_%m_%d_%H') + '.log'
         logname = sys.argv[0].split(
             '/')[-1].split('.')[0] + '.log'
         logname = os.path.join(logpath, logname)
@@ -53,7 +55,7 @@ class xLogger(object):
                 self.logger.addHandler(fh)
             else:
                 fh = logging.handlers.TimedRotatingFileHandler(
-                    filename=logname, when='D', interval=1, backupCount=lognum)
+                    filename=logname, when='H', interval=1, backupCount=lognum)
 
                 fh.setLevel(level)
                 fh.setFormatter(self.formatter)
@@ -96,7 +98,7 @@ class xLogger(object):
 
 
 user_name = pwd.getpwuid(os.getuid())[0]
-logg = xLogger(user_name, './config.xml')
+logg = xLogger(user_name, progam_path + 'data/config.xml')
 
 
 def LOG_DEBUG(*params_a):
