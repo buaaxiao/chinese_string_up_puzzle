@@ -356,10 +356,12 @@ class Chinese_string_up_puzzle(QMainWindow):
             self.data_filepath, default_module=enum_Puzzle_Module.Model_All)
 
         self.idiom = None
+        self.ai_answer = None
         self.idiom_used = {}
         self.idiom_used['all'] = []
         self.idiom_used['user'] = []
         self.idiom_used['ai'] = []
+        self.idiom_used['used'] = []
         self.answer_idiom_dict_promote = {}
 
     def _ai_round(self):
@@ -375,15 +377,15 @@ class Chinese_string_up_puzzle(QMainWindow):
         if not idiom or self.idiom == idiom:
             return
 
-        if not self.Chinese_string_engine.idiom_exists(idiom):
-            QMessageBox.warning(
-                self, '输入错误', '系统成语库中无该记录!', QMessageBox.StandardButton.Ok)
+        # 输入检查
+        if not self._check_userInputValid(idiom):
             return
+
         self.idiom = idiom
         self._set_output(self.idiom, enum_Idiom_Output.ENUM_IDIOM_OUTPUT_USER)
 
         self.ai_answer, self.idiom_promote, self.answer_idiom_dict_promote = self.Chinese_string_engine.get_nextIdom(
-            self.idiom, self.idiom_used['user'] + self.idiom_used['ai'])
+            self.idiom, self.idiom_used['used'])
         LOG_TRACE(self.ai_answer)
         if None == self.ai_answer:
             self._congratulation(self.idiom)
@@ -415,6 +417,7 @@ class Chinese_string_up_puzzle(QMainWindow):
             self.user_spell_edit.setText(spell)
             self.user_explain_edit.setText(text)
             self.idiom_used['user'].append(idiom)
+            self.idiom_used['used'].append(idiom)
             self.idiom_used['all'].append(['user', idiom])
             LOG_INFO(HIS_DISPALY_USER + idiom)
         elif enum_Idiom_Output.ENUM_IDIOM_OUTPUT_AI == type:
@@ -424,6 +427,7 @@ class Chinese_string_up_puzzle(QMainWindow):
             self.ai_spell_edit.setText(spell)
             self.ai_explain_edit.setText(text)
             self.idiom_used['ai'].append(idiom)
+            self.idiom_used['used'].append(idiom)
             self.idiom_used['all'].append(['ai', idiom])
             LOG_INFO(HIS_DISPALY_AI + idiom)
             if 0 == len(answer_idiom_dict_promote):
@@ -432,6 +436,49 @@ class Chinese_string_up_puzzle(QMainWindow):
                 self.idiom_promote_edit.clear()
                 for idPromote in answer_idiom_dict_promote:
                     self.idiom_promote_edit.append(idPromote)
+
+    #  '''检测我方输入成语是否合法'''
+    def _check_userInputValid(self, idiom):
+        # 成语已使用
+        if idiom in self.idiom_used['used']:
+            QMessageBox.warning(
+                self, '成语已使用', '你输入的成语已在本次接龙中使用, 请重新输入!', QMessageBox.StandardButton.Ok)
+            return False
+
+        if not self.Chinese_string_engine.idiom_exists(idiom):
+            QMessageBox.warning(
+                self, '输入错误', '系统成语库中无该记录!', QMessageBox.StandardButton.Ok)
+            return False
+
+        if None != self.ai_answer:
+            retCheck = self.Chinese_string_engine.check_idiom(
+                idiom, self.ai_answer)
+            if enum_Puzzle_Unmatch.Unmatch_All == retCheck:
+                QMessageBox.warning(
+                    self, '输入错误', '首尾字及拼音匹配失败!', QMessageBox.StandardButton.Ok)
+                return False
+
+            if enum_Puzzle_Unmatch.Unmatch_Word == retCheck:
+                QMessageBox.warning(
+                    self, '输入错误', '首尾字匹配失败!', QMessageBox.StandardButton.Ok)
+                return False
+
+            if enum_Puzzle_Unmatch.Unmatch_LzPinyin == retCheck:
+                QMessageBox.warning(
+                    self, '输入错误', '首尾字拼音模糊匹配失败!',   QMessageBox.StandardButton.Ok)
+                return False
+
+            if enum_Puzzle_Unmatch.Unmatch_Pinyin == retCheck:
+                QMessageBox.warning(
+                    self, '输入错误', '首尾字拼音精确匹配失败!',  QMessageBox.StandardButton.Ok)
+                return False
+
+            if enum_Puzzle_Unmatch.Unmatch_Multi == retCheck:
+                QMessageBox.warning(
+                    self, '输入错误', '首尾多音字匹配失败!',  QMessageBox.StandardButton.Ok)
+                return False
+
+        return True
 
     def _congratulation(self, idiom, source_type=enum_Idiom_Source.ENUM_IDIOM_SOURCE_AI):
         if not self.operate_action_auto.isChecked() and source_type != enum_Idiom_Source.ENUM_IDIOM_SOURCE_AUTO:

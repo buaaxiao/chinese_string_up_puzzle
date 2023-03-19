@@ -25,6 +25,15 @@ class enum_Puzzle_Module(enum.Enum):
     Model_BattleSingle = 0b100000
 
 
+class enum_Puzzle_Unmatch(enum.Enum):
+    Unmatch_All = 0b1
+    Unmatch_Word = 0b10
+    Unmatch_LzPinyin = 0b100
+    Unmatch_Pinyin = 0b1000
+    Unmatch_Multi = 0b10000
+    Unmatch_BattleSingle = 0b100000
+
+
 class enumBarButton_Display(enum.Enum):
     Menu_ControlId_All = 0b1
     Menu_ControlId_USER = 0b10

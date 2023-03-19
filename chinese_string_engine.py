@@ -146,6 +146,32 @@ class Chinese_string_engine(object):
     def idiom_exists(self, idiom):
         return True if idiom in list(self.idiom_dict['instance'].keys()) else False
 
+    def check_idiom(self, idiom, idiom_check):
+        LOG_INFO(idiom, idiom_check)
+        idiom_head_pinyin = ''.join(pypinyin.pinyin(idiom)[0])
+        idiom_check_tail_pinyin = ''.join(pypinyin.pinyin(idiom_check)[-1])
+        LOG_INFO(idiom_head_pinyin, idiom_check_tail_pinyin)
+        if enum_Puzzle_Module.Model_All == self.puzzle_model and (idiom[0] != idiom_check[-1] or idiom_head_pinyin != idiom_check_tail_pinyin):
+            return enum_Puzzle_Unmatch.Unmatch_All
+
+        if enum_Puzzle_Module.Model_Word == self.puzzle_model and idiom[0] != idiom_check[-1]:
+            return enum_Puzzle_Unmatch.Unmatch_Word
+
+        idiom_head_lzpinyin = pypinyin.lazy_pinyin(idiom)[-1]
+        idiom_check_tail_lzpinyin = pypinyin.lazy_pinyin(idiom_check)[-1]
+        LOG_INFO(idiom_head_lzpinyin, idiom_check_tail_lzpinyin)
+        if enum_Puzzle_Module.Model_LzPinyin == self.puzzle_model and idiom_head_lzpinyin != idiom_check_tail_lzpinyin:
+            return enum_Puzzle_Unmatch.Unmatch_LzPinyin
+
+        if enum_Puzzle_Module.Model_Pinyin == self.puzzle_model and idiom_head_pinyin != idiom_check_tail_pinyin:
+            return enum_Puzzle_Unmatch.Unmatch_Pinyin
+
+        mulpinyin = pypinyin.pinyin(idiom_check[-1], heteronym=True)[0]
+        if enum_Puzzle_Module.Model_Multi == self.puzzle_model and idiom_head_pinyin not in mulpinyin:
+            return enum_Puzzle_Unmatch.Unmatch_Multi
+
+        return 0
+
 
 # '''run'''
 if TEST_FLAG:

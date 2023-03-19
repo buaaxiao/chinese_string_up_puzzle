@@ -27,7 +27,7 @@ TODO>>>>成语库配置
 TODO>>>>语音播报
 
 mac打包：
-pip install Pillow;pyinstaller -i image/icon.png --windowed --clean --noconfirm --noconsole --add-data ./data:data --add-data ./image:image chinese_string_up_puzzle.py;pyinstaller --clean --noconfirm chinese_string_up_puzzle.spec
+rm -rf build dist logs xcommon/__pycache;pip install Pillow;pyinstaller -i image/icon.png --windowed --clean --noconfirm --noconsole --add-data ./data:data --add-data ./image:image chinese_string_up_puzzle.py;pyinstaller --clean --noconfirm chinese_string_up_puzzle.spec
 
 clean:
 rm -rf build dist logs xcommon/__pycache
