@@ -21,13 +21,15 @@
 <!-- TODO>>>>自动接龙 -->
 <!-- TODO>>>>MVC模式设计 -->
 <!-- TODO>>>>自动接龙提示已输入错误 -->
-TODO>>>>有字即可模式
+TODO>>>>语音播报
 TODO>>>>生成接龙报告
 TODO>>>>成语库配置
-TODO>>>>语音播报
 
-mac打包：
-rm -rf build dist logs xcommon/__pycache;pip install Pillow;pyinstaller -i image/icon.png --windowed --clean --noconfirm --noconsole --add-data ./data:data --add-data ./image:image chinese_string_up_puzzle.py;pyinstaller --clean --noconfirm chinese_string_up_puzzle.spec
+<!-- mac打包： -->
+pip install Pillow;
+rm -rf build dist logs xcommon/__pycache;
+pyinstaller -i image/icon.png --windowed --clean --noconfirm --noconsole --add-data ./data:data --add-data ./image:image chinese_string_up_puzzle.py;
+pyinstaller --clean --noconfirm chinese_string_up_puzzle.spec
 
-clean:
+<!-- clean: -->
 rm -rf build dist logs xcommon/__pycache
