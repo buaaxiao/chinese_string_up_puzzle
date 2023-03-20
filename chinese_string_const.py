@@ -43,7 +43,6 @@ class enumBarButton_Display(enum.Enum):
 class enumBarButton_Operate(enum.Enum):
     Menu_ControlId_Work_Auto = 0b1
     Menu_ControlId_Work_Promote = 0b10
-    Menu_ControlId_Work_Continue = 0b100
 
 
 class enum_Idiom_Source(enum.Enum):

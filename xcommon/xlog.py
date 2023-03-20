@@ -10,6 +10,7 @@ from xcommon.xconfig import xConfigHandle
 from logging.handlers import TimedRotatingFileHandler
 
 progam_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + '/'
+cfg_path = progam_path + './data/config.xml'
 
 
 class xLogger(object):
@@ -98,7 +99,7 @@ class xLogger(object):
 
 
 user_name = pwd.getpwuid(os.getuid())[0]
-logg = xLogger(user_name, progam_path + 'data/config.xml')
+logg = xLogger(user_name, cfg_path)
 
 
 def LOG_DEBUG(*params_a):

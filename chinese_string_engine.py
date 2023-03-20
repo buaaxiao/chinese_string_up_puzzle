@@ -4,6 +4,7 @@
 
 import json
 import random
+import re
 import numpy
 import pypinyin
 from PyQt6.QtCore import *
@@ -16,7 +17,7 @@ from xcommon.xlog import *
 
 
 class Chinese_string_engine(object):
-    def __init__(self, data_pathfile, default_module):
+    def __init__(self, data_pathfile, default_module=enum_Puzzle_Module.Model_All):
         self._load_data(data_pathfile)
         self.puzzle_model = default_module
 
@@ -30,8 +31,30 @@ class Chinese_string_engine(object):
 
     # '''生成字典'''
     def _generate_dict(self, data_pathfile):
-        with open(data_pathfile) as f:
-            self.idiom_dict = json.load(f)
+        LOG_TRACE(data_pathfile)
+        fp = open(data_pathfile, 'r', encoding='gbk', errors='ignore')
+
+        idiom_dict = {}
+        idiom_instance = {}
+        idiom_tmp = ''
+        for line in fp.readlines():
+            line = line.strip()
+            if '<->' == line and '' != idiom_tmp:
+                idiom_dict[idiom_tmp[0]][idiom_tmp] = idiom_instance.copy()
+                idiom_tmp = ''
+                idiom_instance.clear()
+                continue
+
+            item = re.split(r'\t+', line.rstrip('\t'))
+            if len(item) != 2:
+                continue
+
+            if item[0] == '成语':
+                idiom_tmp = item[1]
+                if idiom_tmp[0] not in idiom_dict:
+                    idiom_dict[idiom_tmp[0]] = {}
+            idiom_instance[item[0]] = item[1]
+        self.idiom_dict["idiom"] = idiom_dict
 
         idiom_dict_data = self.idiom_dict['idiom']
         ins_dict = {}
@@ -51,10 +74,10 @@ class Chinese_string_engine(object):
 
         self.idiom_dict['instance'] = ins_dict
         self.idiom_dict['mulpinyin'] = mulpy_dict
-        LOG_INFO(self.idiom_dict)
+        LOG_TRACE(self.idiom_dict)
 
-    def _get_nextIdiom(self, idiom, except_dict=[]):
-        LOG_TRACE(idiom, self.puzzle_model, except_dict)
+    def _get_nextIdiom(self, idiom, except_dict=[], puzzle_model=enum_Puzzle_Module.Model_All):
+        LOG_INFO(idiom, puzzle_model, except_dict)
         pinyin = ''.join(pypinyin.pinyin(idiom)[-1])
         lzpinyin = pypinyin.lazy_pinyin(idiom)[-1]
         mulpinyin = pypinyin.pinyin(idiom[-1], heteronym=True)[0]
@@ -64,36 +87,44 @@ class Chinese_string_engine(object):
         idiom_answer = None
         answer_list = []
         # 同字同音匹配模式
-        if enum_Puzzle_Module.Model_All == self.puzzle_model and idiom[-1] in idiom_dict_data:
+        if enum_Puzzle_Module.Model_All == puzzle_model and idiom[-1] in idiom_dict_data:
             idiom_data_list = list(idiom_dict_data[idiom[-1]])
             answer_list = list(filter(
                 lambda x: ''.join(pypinyin.pinyin(x)[0]) == pinyin, idiom_data_list))
 
         # 同字匹配模式
-        elif enum_Puzzle_Module.Model_Word == self.puzzle_model and idiom[-1] in idiom_dict_data:
+        elif enum_Puzzle_Module.Model_Word == puzzle_model and idiom[-1] in idiom_dict_data:
             answer_list = list(idiom_dict_data[idiom[-1]])
 
-        elif not set(mulpinyin).isdisjoint(self.idiom_dict['mulpinyin'].keys()) and (enum_Puzzle_Module.Model_LzPinyin == self.puzzle_model or enum_Puzzle_Module.Model_Pinyin == self.puzzle_model or enum_Puzzle_Module.Model_Multi == self.puzzle_model):
+        elif not set(mulpinyin).isdisjoint(self.idiom_dict['mulpinyin'].keys()) and (enum_Puzzle_Module.Model_LzPinyin == puzzle_model or enum_Puzzle_Module.Model_Pinyin == puzzle_model or enum_Puzzle_Module.Model_Multi == puzzle_model):
             answer_list_tmp = []
+            answer_list_pytmp = []
             key_list = list(filter(
                 lambda key: key in mulpinyin, self.idiom_dict['mulpinyin'].keys()))
             for key in key_list:
                 answer_list_tmp += self.idiom_dict['mulpinyin'][key]
 
-            # 多音匹配模式
-            if enum_Puzzle_Module.Model_Multi == self.puzzle_model:
-                answer_list = list(filter(
-                    lambda word: ''.join(pypinyin.pinyin(word)[0]) in mulpinyin, answer_list_tmp))
-
-            # 同拼匹配模式
-            elif enum_Puzzle_Module.Model_LzPinyin == self.puzzle_model:
-                answer_list = list(filter(
-                    lambda word: pypinyin.lazy_pinyin(word)[0] == lzpinyin, answer_list_tmp))
-
             # 同音匹配模式
-            elif enum_Puzzle_Module.Model_Pinyin == self.puzzle_model:
+            if enum_Puzzle_Module.Model_Pinyin == puzzle_model or enum_Puzzle_Module.Model_Multi == puzzle_model:
                 answer_list = list(filter(
                     lambda word: ''.join(pypinyin.pinyin(word)[0]) == pinyin, answer_list_tmp))
+                answer_list_pytmp = answer_list
+
+            # 同拼匹配模式
+            if enum_Puzzle_Module.Model_LzPinyin == puzzle_model:
+                if not answer_list_pytmp:
+                    answer_list = list(filter(
+                        lambda word: pypinyin.lazy_pinyin(word)[0] == lzpinyin, answer_list_tmp))
+                else:
+                    answer_list = answer_list_pytmp
+
+            # 多音匹配模式
+            if enum_Puzzle_Module.Model_Multi == puzzle_model:
+                if not answer_list_pytmp:
+                    answer_list = list(filter(
+                        lambda word: ''.join(pypinyin.pinyin(word)[0]) in mulpinyin, answer_list_tmp))
+                else:
+                    answer_list = answer_list_pytmp
 
         if 0 != len(answer_list):
             idiom_answer = random.choice(
@@ -107,10 +138,10 @@ class Chinese_string_engine(object):
         idiom_promote = None
         idiom_promote_dict = []
         ai_answer, _ = self._get_nextIdiom(
-            idiom, except_dict)
+            idiom, except_dict, self.puzzle_model)
         if None != ai_answer:
             idiom_promote, idiom_promote_dict = self._get_nextIdiom(
-                ai_answer, except_dict)
+                ai_answer, except_dict, self.puzzle_model)
 
         return ai_answer, idiom_promote, idiom_promote_dict
 
@@ -147,19 +178,19 @@ class Chinese_string_engine(object):
         return True if idiom in list(self.idiom_dict['instance'].keys()) else False
 
     def check_idiom(self, idiom, idiom_check):
-        LOG_INFO(idiom, idiom_check)
+        LOG_TRACE(idiom, idiom_check)
         idiom_head_pinyin = ''.join(pypinyin.pinyin(idiom)[0])
         idiom_check_tail_pinyin = ''.join(pypinyin.pinyin(idiom_check)[-1])
-        LOG_INFO(idiom_head_pinyin, idiom_check_tail_pinyin)
+        LOG_TRACE(idiom_head_pinyin, idiom_check_tail_pinyin)
         if enum_Puzzle_Module.Model_All == self.puzzle_model and (idiom[0] != idiom_check[-1] or idiom_head_pinyin != idiom_check_tail_pinyin):
             return enum_Puzzle_Unmatch.Unmatch_All
 
         if enum_Puzzle_Module.Model_Word == self.puzzle_model and idiom[0] != idiom_check[-1]:
             return enum_Puzzle_Unmatch.Unmatch_Word
 
-        idiom_head_lzpinyin = pypinyin.lazy_pinyin(idiom)[-1]
+        idiom_head_lzpinyin = pypinyin.lazy_pinyin(idiom)[0]
         idiom_check_tail_lzpinyin = pypinyin.lazy_pinyin(idiom_check)[-1]
-        LOG_INFO(idiom_head_lzpinyin, idiom_check_tail_lzpinyin)
+        LOG_TRACE(idiom_head_lzpinyin, idiom_check_tail_lzpinyin)
         if enum_Puzzle_Module.Model_LzPinyin == self.puzzle_model and idiom_head_lzpinyin != idiom_check_tail_lzpinyin:
             return enum_Puzzle_Unmatch.Unmatch_LzPinyin
 
@@ -176,21 +207,22 @@ class Chinese_string_engine(object):
 # '''run'''
 if TEST_FLAG:
     if __name__ == '__main__':
-        data_filepath = progam_path + 'data/data.json'
+        data_filepath = progam_path + './data/data.json'
         engine = Chinese_string_engine(data_filepath)
         idiom = '白雪难和'
         except_dict = {}
-        LOG_INFO(engine._get_nextIdiom(
-            idiom, enum_Puzzle_Module.Model_All, except_dict))
-        LOG_INFO(engine._get_nextIdiom(
-            idiom, enum_Puzzle_Module.Model_Word, except_dict))
-        LOG_INFO(engine._get_nextIdiom(
-            idiom, enum_Puzzle_Module.Model_LzPinyin, except_dict))
-        LOG_INFO(engine._get_nextIdiom(
-            idiom, enum_Puzzle_Module.Model_Pinyin, except_dict))
-        LOG_INFO(engine._get_nextIdiom(
-            idiom, enum_Puzzle_Module.Model_Multi, except_dict))
+        LOG_TRACE(engine._get_nextIdiom(
+            idiom, except_dict, enum_Puzzle_Module.Model_All))
+        LOG_TRACE(engine._get_nextIdiom(
+            idiom, except_dict, enum_Puzzle_Module.Model_Word))
+        LOG_TRACE(engine._get_nextIdiom(
+            idiom, except_dict, enum_Puzzle_Module.Model_LzPinyin))
+        LOG_TRACE(engine._get_nextIdiom(
+            idiom, except_dict, enum_Puzzle_Module.Model_Pinyin))
+        LOG_TRACE(engine._get_nextIdiom(
+            idiom, except_dict, enum_Puzzle_Module.Model_Multi))
 
-        LOG_INFO(engine._get_answerText(idiom))
+        LOG_TRACE(engine._get_answerText(idiom))
 
-        # LOG_INFO(engine.get_idiom_instance(idiom))
+        # LOG_TRACE(engine.get_idiom_instance(idiom))
+        engine._generate_dict(progam_path + './data/data_source.txt')
