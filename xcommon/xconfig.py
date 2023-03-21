@@ -11,13 +11,27 @@ class xConfigHandle(object):
         # 文档根元素
         self.rootNode = self.domTree.documentElement
 
-    def get_value(self, element, tag):
+    # str
+    def get_value(self, element, tag, default_value=''):
+        self.domTree = parse(self.filename)
+        # 文档根元素
+        self.rootNode = self.domTree.documentElement
         eleNodes = self.rootNode.getElementsByTagName(element)
         if eleNodes.length == 0:
-            return None
+            return default_value
         for eleNode in eleNodes:
             tagNode = eleNode.getElementsByTagName(tag)
+            if tagNode.length == 0:
+                return default_value
         return tagNode[0].childNodes[0].data
+
+    # int
+    def get_value_int(self, element, tag, default_value=0):
+        return int(self.get_value(element, tag, default_value=str(default_value)))
+
+    # bool
+    # def get_value_bool(self, element, tag, default_value=False):
+    #     return bool(self.get_value(element, tag, default_value=str(default_value)))
 
     def set_value(self, section, option, value):
         data = {option: value}

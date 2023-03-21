@@ -74,10 +74,10 @@ class Chinese_string_engine(object):
 
         self.idiom_dict['instance'] = ins_dict
         self.idiom_dict['mulpinyin'] = mulpy_dict
-        LOG_TRACE(self.idiom_dict)
+        print(str(self.idiom_dict).replace('\'', '"'))
 
     def _get_nextIdiom(self, idiom, except_dict=[], puzzle_model=enum_Puzzle_Module.Model_All):
-        LOG_INFO(idiom, puzzle_model, except_dict)
+        LOG_TRACE(idiom, puzzle_model, except_dict)
         pinyin = ''.join(pypinyin.pinyin(idiom)[-1])
         lzpinyin = pypinyin.lazy_pinyin(idiom)[-1]
         mulpinyin = pypinyin.pinyin(idiom[-1], heteronym=True)[0]
@@ -223,6 +223,22 @@ if TEST_FLAG:
             idiom, except_dict, enum_Puzzle_Module.Model_Multi))
 
         LOG_TRACE(engine._get_answerText(idiom))
+        LOG_TRACE(engine.get_idiom_instance(idiom))
 
-        # LOG_TRACE(engine.get_idiom_instance(idiom))
-        engine._generate_dict(progam_path + './data/data_source.txt')
+        if len(sys.argv) > 1 and 'dict' == sys.argv[1]:
+            engine._generate_dict(progam_path + './data/data_source.txt')
+
+        continue_dict = {
+            # enum_Puzzle_Module.Model_All: 'all',
+            enum_Puzzle_Module.Model_Word: 'word',
+            enum_Puzzle_Module.Model_LzPinyin: 'lzpinyin',
+            enum_Puzzle_Module.Model_Pinyin: 'pinyin',
+            enum_Puzzle_Module.Model_Multi: 'multi',
+            enum_Puzzle_Module.Model_BattleSingle: 'battlesingle',
+            enumBarButton_Operate.Menu_ControlId_Work_Promote: 'promote',
+            enumBarButton_Operate.Menu_ControlId_Work_Auto: 'auto',
+        }
+
+        for control_id in continue_dict:
+            LOG_TRACE(type(control_id), type(continue_dict[control_id]))
+            LOG_TRACE(control_id, continue_dict[control_id])

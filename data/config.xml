@@ -1,11 +1,20 @@
 <?xml version='1.0' encoding='utf-8'?>
 <root>
-	<log>
-		<level>info</level>
-		<path>./logs</path>
-		<size>0</size>
-		<num>2</num>
-		<out_put_to_file>1</out_put_to_file>
-		<out_put_to_terminate>1</out_put_to_terminate>
-	</log>
+    <function>
+        <word>1</word>
+        <lzpinyin>1</lzpinyin>
+        <pinyin>1</pinyin>
+        <multi>1</multi>
+        <battlesingle>1</battlesingle>
+        <auto>1</auto>
+        <promote>1</promote>
+    </function>
+    <log>
+        <level>info</level>
+        <path>./logs</path>
+        <size>0</size>
+        <num>2</num>
+        <out_put_to_file>1</out_put_to_file>
+        <out_put_to_terminate>1</out_put_to_terminate>
+    </log>
 </root>

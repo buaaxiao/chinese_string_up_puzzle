@@ -25,19 +25,28 @@ from xcommon.xlog import *
 class Chinese_string_up_puzzle(QMainWindow):
     # 暂未实现功能
     def _to_beContinue(self,  control_id, btn=None):
-        self.continue_set = [
-            # enum_Puzzle_Module.Model_Multi,
-            # enumBarButton_Operate.Menu_ControlId_Work_Promote,
-            # enumBarButton_Operate.Menu_ControlId_Work_Auto,
-            # enum_Puzzle_Module.Model_BattleSingle,
-        ]
+        LOG_TRACE(control_id, btn)
+        continue_dict = {
+            # enum_Puzzle_Module.Model_All: 'all',
+            enum_Puzzle_Module.Model_Word: 'word',
+            enum_Puzzle_Module.Model_LzPinyin: 'lzpinyin',
+            enum_Puzzle_Module.Model_Pinyin: 'pinyin',
+            enum_Puzzle_Module.Model_Multi: 'multi',
+            enum_Puzzle_Module.Model_BattleSingle: 'battlesingle',
+            enumBarButton_Operate.Menu_ControlId_Work_Promote: 'promote',
+            enumBarButton_Operate.Menu_ControlId_Work_Auto: 'auto',
+        }
 
-        if control_id in self.continue_set:
-            QMessageBox.information(
-                self, 'TODO', 'to be continue!', QMessageBox.StandardButton.Ok)
-            if btn:
-                btn.setChecked(False)
-            return True
+        if control_id in continue_dict.keys():
+            config_value = self.cConfigHandle.get_value_int(
+                'function', continue_dict[control_id], 0)
+            LOG_TRACE('config_value:', config_value)
+            if 1 != config_value:
+                QMessageBox.information(
+                    self, 'Very Important Person', 'VIP功能!', QMessageBox.StandardButton.Ok)
+                if btn:
+                    btn.setChecked(False)
+                return True
 
         return False
 
@@ -48,9 +57,9 @@ class Chinese_string_up_puzzle(QMainWindow):
 
         if TTS_OPT:
             self.pt = pyttsx3.init()
+        self._init_config()
         self.auto_timer = QTimer()
-        self.auto_timer.timeout.connect(
-            lambda: self._do_auto())
+        self.auto_timer.timeout.connect(lambda: self._do_auto())
 
         # 初始化
         self._add_moduleMenuBar()
@@ -60,6 +69,9 @@ class Chinese_string_up_puzzle(QMainWindow):
 
         # 读取数据
         self._init_data()
+
+    def _init_config(self):
+        self.cConfigHandle = xConfigHandle(cfg_path)
 
     def _add_moduleMenuBar(self):
         menu = self.menuBar()
@@ -328,7 +340,7 @@ class Chinese_string_up_puzzle(QMainWindow):
 
     # '''数据加载'''
     def _init_data(self):
-        LOG_INFO('开始')
+        LOG_INFO('数据加载')
         if not self.module_action_BattleSingle.isChecked():
             self.user_input_edit.clear()
             self.user_spell_edit.clear()
