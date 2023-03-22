@@ -312,7 +312,7 @@ class Chinese_string_up_puzzle(QMainWindow):
             self.user_input_button.click)
         self.user_input_button.clicked.connect(self._ai_round)
         self.restart_button.clicked.connect(
-            lambda: self._init_data())
+            lambda: self._restart())
 
         # 布局
         self.grid = QGridLayout()
@@ -337,6 +337,11 @@ class Chinese_string_up_puzzle(QMainWindow):
         self.widget = QWidget()
         self.widget.setLayout(self.grid)
         self.setCentralWidget(self.widget)
+
+    def _restart(self):
+        puzzle_model = self.Chinese_string_engine.get_model()
+        self._init_data()
+        self.Chinese_string_engine.set_model(puzzle_model)
 
     # '''数据加载'''
     def _init_data(self):

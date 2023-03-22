@@ -126,6 +126,9 @@ class Chinese_string_engine(object):
                 else:
                     answer_list = answer_list_pytmp
 
+        if set(answer_list) < set(except_dict):
+            answer_list = []
+
         if 0 != len(answer_list):
             idiom_answer = random.choice(
                 list(filter(lambda x: x not in except_dict and x != idiom, answer_list)))
@@ -203,6 +206,9 @@ class Chinese_string_engine(object):
 
         return 0
 
+    def get_model(self):
+        return self.puzzle_model
+
 
 # '''run'''
 if TEST_FLAG:
@@ -242,3 +248,7 @@ if TEST_FLAG:
         for control_id in continue_dict:
             LOG_TRACE(type(control_id), type(continue_dict[control_id]))
             LOG_TRACE(control_id, continue_dict[control_id])
+            
+        LOG_TRACE(pypinyin.pinyin('奥', heteronym=True)[0])
+        LOG_TRACE(pypinyin.pinyin('奥', heteronym=False)[0])
+        LOG_TRACE(pypinyin.lazy_pinyin('奥')[0])
