@@ -3,18 +3,6 @@
 import enum
 
 
-# '''常量定义'''
-HIS_DISPALY_USER = '【我方】'
-HIS_DISPALY_AI = '【电脑】'
-PROGAM_TITLE = '成语接龙'
-PROGAM_SIZE_FIX = False
-USE_DICT_SPELL = False
-TTS_OPT = False
-AUTO_TIMER_INTERVAL = 1
-TEST_FLAG = 1
-ANSWER_EXCEPT_DICT = ['成语', '拼音']
-
-
 # '''枚举定义'''
 class enum_Puzzle_Module(enum.Enum):
     Model_All = 0b1

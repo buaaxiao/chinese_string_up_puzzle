@@ -12,7 +12,7 @@ class xConfigHandle(object):
         self.rootNode = self.domTree.documentElement
 
     # str
-    def get_value(self, element, tag, default_value=''):
+    def get_value_str(self, element, tag, default_value=''):
         self.domTree = parse(self.filename)
         # 文档根元素
         self.rootNode = self.domTree.documentElement
@@ -27,11 +27,7 @@ class xConfigHandle(object):
 
     # int
     def get_value_int(self, element, tag, default_value=0):
-        return int(self.get_value(element, tag, default_value=str(default_value)))
-
-    # bool
-    # def get_value_bool(self, element, tag, default_value=False):
-    #     return bool(self.get_value(element, tag, default_value=str(default_value)))
+        return int(self.get_value_str(element, tag, default_value=str(default_value)))
 
     def set_value(self, section, option, value):
         data = {option: value}

@@ -1,13 +1,11 @@
 # coding:utf-8
-from inspect import currentframe, getmodule, stack
-import logging
-import logging.handlers
-import datetime
 import os
 import pwd
 import sys
+import datetime
+import logging
+import logging.handlers
 from xcommon.xconfig import xConfigHandle
-from logging.handlers import TimedRotatingFileHandler
 
 progam_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + '/'
 cfg_path = progam_path + './data/config.xml'
@@ -16,19 +14,16 @@ cfg_path = progam_path + './data/config.xml'
 class xLogger(object):
     def __init__(self, name, config_file='config.xml'):
         cConfigHandle = xConfigHandle(config_file)
-        logpath = progam_path + cConfigHandle.get_value('log', 'path')
+        logpath = progam_path + \
+            cConfigHandle.get_value_str('log', 'path', './logs')
         if not os.path.exists(logpath):
             os.mkdir(logpath)
         # 读取日志文件容量，转换为字节
         lognum = 10
-        nm = cConfigHandle.get_value('log', 'num')
-        if None != nm:
-            lognum = int(nm)
+        lognum = cConfigHandle.get_value_int('log', 'num', 10)
 
         logsize = 0
-        sz = cConfigHandle.get_value('log', 'size')
-        if None != nm:
-            logsize = int(sz)
+        logsize = cConfigHandle.get_value_int('log', 'size', 0)
 
         # 读取日志文件保存个数
         # 日志文件名：由用例脚本的名称，结合日志保存路径，得到日志文件的绝对路径
@@ -38,7 +33,7 @@ class xLogger(object):
             '/')[-1].split('.')[0] + '.log'
         logname = os.path.join(logpath, logname)
         # 日志级别
-        level = cConfigHandle.get_value('log', 'level').upper()
+        level = cConfigHandle.get_value_str('log', 'level', 'error').upper()
 
         self.logger = logging.getLogger(name)
         self.logger.setLevel(level)
@@ -46,7 +41,7 @@ class xLogger(object):
             '[%(asctime)s][%(name)s][%(levelname)s] %(message)s'
         )
 
-        if '1' == cConfigHandle.get_value('log', 'out_put_to_file'):
+        if 1 == cConfigHandle.get_value_int('log', 'out_put_to_file', 0):
             # 创建一个FileHandler,存储日志文件
             if logsize != 0:
                 fh = logging.handlers.RotatingFileHandler(
@@ -62,7 +57,7 @@ class xLogger(object):
                 fh.setFormatter(self.formatter)
                 self.logger.addHandler(fh)
 
-        if '1' == cConfigHandle.get_value('log', 'out_put_to_terminate'):
+        if 1 == cConfigHandle.get_value_int('log', 'out_put_to_terminate', 0):
             # 创建一个StreamHandler,用于输出到控制台
             sh = logging.StreamHandler(stream=sys.stdout)
             sh.setLevel(level)

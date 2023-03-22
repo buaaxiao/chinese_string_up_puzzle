@@ -1,5 +1,12 @@
 <?xml version='1.0' encoding='utf-8'?>
 <root>
+    <common>
+        <his_dispaly_user>【我方】</his_dispaly_user>
+        <his_dispaly_ai>【电脑】</his_dispaly_ai>
+        <progam_title>成语接龙</progam_title>
+        <progam_size_fix>0</progam_size_fix>
+        <auto_timer_interval>1</auto_timer_interval>
+    </common>
     <function>
         <word>1</word>
         <lzpinyin>1</lzpinyin>

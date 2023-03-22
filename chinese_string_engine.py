@@ -2,20 +2,19 @@
 # -*- coding : utf-8-*-
 # coding:unicode_escape
 
-import json
-import random
 import re
+import json
 import numpy
+import random
 import pypinyin
-from PyQt6.QtCore import *
 from PyQt6.QtGui import *
+from PyQt6.QtCore import *
 from PyQt6.QtWidgets import *
-from chinese_string_const import *
 from xcommon.xlog import *
+from chinese_string_enum import *
 
-# 成语引擎
 
-
+# '''成语引擎'''
 class Chinese_string_engine(object):
     def __init__(self, data_pathfile, default_module=enum_Puzzle_Module.Model_All):
         self._load_data(data_pathfile)
@@ -164,11 +163,9 @@ class Chinese_string_engine(object):
         if None == answer_idiom_dict:
             return None
 
-        if USE_DICT_SPELL:
-            spell = answer_idiom_dict[idiom]['拼音']
-        else:
-            spell = '%s' % ' '.join(
-                numpy.hstack(pypinyin.pinyin(idiom)))
+            # spell = answer_idiom_dict[idiom]['拼音']
+        spell = '%s' % ' '.join(
+            numpy.hstack(pypinyin.pinyin(idiom)))
 
         return spell
 
@@ -211,44 +208,43 @@ class Chinese_string_engine(object):
 
 
 # '''run'''
-if TEST_FLAG:
-    if __name__ == '__main__':
-        data_filepath = progam_path + './data/data.json'
-        engine = Chinese_string_engine(data_filepath)
-        idiom = '白雪难和'
-        except_dict = {}
-        LOG_TRACE(engine._get_nextIdiom(
-            idiom, except_dict, enum_Puzzle_Module.Model_All))
-        LOG_TRACE(engine._get_nextIdiom(
-            idiom, except_dict, enum_Puzzle_Module.Model_Word))
-        LOG_TRACE(engine._get_nextIdiom(
-            idiom, except_dict, enum_Puzzle_Module.Model_LzPinyin))
-        LOG_TRACE(engine._get_nextIdiom(
-            idiom, except_dict, enum_Puzzle_Module.Model_Pinyin))
-        LOG_TRACE(engine._get_nextIdiom(
-            idiom, except_dict, enum_Puzzle_Module.Model_Multi))
+if __name__ == '__main__':
+    data_filepath = progam_path + './data/data.json'
+    engine = Chinese_string_engine(data_filepath)
+    idiom = '白雪难和'
+    except_dict = {}
+    LOG_TRACE(engine._get_nextIdiom(
+        idiom, except_dict, enum_Puzzle_Module.Model_All))
+    LOG_TRACE(engine._get_nextIdiom(
+        idiom, except_dict, enum_Puzzle_Module.Model_Word))
+    LOG_TRACE(engine._get_nextIdiom(
+        idiom, except_dict, enum_Puzzle_Module.Model_LzPinyin))
+    LOG_TRACE(engine._get_nextIdiom(
+        idiom, except_dict, enum_Puzzle_Module.Model_Pinyin))
+    LOG_TRACE(engine._get_nextIdiom(
+        idiom, except_dict, enum_Puzzle_Module.Model_Multi))
 
-        LOG_TRACE(engine._get_answerText(idiom))
-        LOG_TRACE(engine.get_idiom_instance(idiom))
+    LOG_TRACE(engine._get_answerText(idiom))
+    LOG_TRACE(engine.get_idiom_instance(idiom))
 
-        if len(sys.argv) > 1 and 'dict' == sys.argv[1]:
-            engine._generate_dict(progam_path + './data/data_source.txt')
+    if len(sys.argv) > 1 and 'dict' == sys.argv[1]:
+        engine._generate_dict(progam_path + './data/data_source.txt')
 
-        continue_dict = {
-            # enum_Puzzle_Module.Model_All: 'all',
-            enum_Puzzle_Module.Model_Word: 'word',
-            enum_Puzzle_Module.Model_LzPinyin: 'lzpinyin',
-            enum_Puzzle_Module.Model_Pinyin: 'pinyin',
-            enum_Puzzle_Module.Model_Multi: 'multi',
-            enum_Puzzle_Module.Model_BattleSingle: 'battlesingle',
-            enumBarButton_Operate.Menu_ControlId_Work_Promote: 'promote',
-            enumBarButton_Operate.Menu_ControlId_Work_Auto: 'auto',
-        }
+    continue_dict = {
+        # enum_Puzzle_Module.Model_All: 'all',
+        enum_Puzzle_Module.Model_Word: 'word',
+        enum_Puzzle_Module.Model_LzPinyin: 'lzpinyin',
+        enum_Puzzle_Module.Model_Pinyin: 'pinyin',
+        enum_Puzzle_Module.Model_Multi: 'multi',
+        enum_Puzzle_Module.Model_BattleSingle: 'battlesingle',
+        enumBarButton_Operate.Menu_ControlId_Work_Promote: 'promote',
+        enumBarButton_Operate.Menu_ControlId_Work_Auto: 'auto',
+    }
 
-        for control_id in continue_dict:
-            LOG_TRACE(type(control_id), type(continue_dict[control_id]))
-            LOG_TRACE(control_id, continue_dict[control_id])
-            
-        LOG_TRACE(pypinyin.pinyin('奥', heteronym=True)[0])
-        LOG_TRACE(pypinyin.pinyin('奥', heteronym=False)[0])
-        LOG_TRACE(pypinyin.lazy_pinyin('奥')[0])
+    for control_id in continue_dict:
+        LOG_TRACE(type(control_id), type(continue_dict[control_id]))
+        LOG_TRACE(control_id, continue_dict[control_id])
+
+    LOG_TRACE(pypinyin.pinyin('奥', heteronym=True)[0])
+    LOG_TRACE(pypinyin.pinyin('奥', heteronym=False)[0])
+    LOG_TRACE(pypinyin.lazy_pinyin('奥')[0])
