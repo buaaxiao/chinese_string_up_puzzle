@@ -42,10 +42,11 @@ class Chinese_string_up_puzzle(QMainWindow):
 
     # 初始化
     def __init__(self, parent=None, **kwargs):
-        LOG_INFO(
-            '----------------------------------开始接龙----------------------------------')
+        LOG_INFO('---------------------------开始接龙---------------------------')
         super(Chinese_string_up_puzzle, self).__init__(parent)
 
+        # 模态注册
+        self._init_model()
         # 读取配置文件
         self._init_config()
         # 添加模块菜单
@@ -60,6 +61,16 @@ class Chinese_string_up_puzzle(QMainWindow):
         self._init_timer()
         # 读取数据
         self._init_data()
+
+    def _init_model(self):
+        self.model_set = []
+
+    def _register_model(self, btn):
+        self.model_set.append(btn)
+
+    def _do_model(self, bModel=False):
+        for btn in self.model_set:
+            btn.setDisabled(bModel)
 
     def _init_config(self):
         self.cConfigHandle = xConfigHandle(cfg_path)
@@ -113,11 +124,17 @@ class Chinese_string_up_puzzle(QMainWindow):
 
         file_menu = menu.addMenu('模式选择(&m)')
         file_menu.addAction(self.module_action_all)
+        self._register_model(self.module_action_all)
         file_menu.addAction(self.module_action_word)
+        self._register_model(self.module_action_word)
         file_menu.addAction(self.module_action_lzpinyin)
+        self._register_model(self.module_action_lzpinyin)
         file_menu.addAction(self.module_action_pinyin)
+        self._register_model(self.module_action_pinyin)
         file_menu.addAction(self.module_action_multi)
+        self._register_model(self.module_action_multi)
         file_menu.addAction(self.module_action_BattleSingle)
+        self._register_model(self.module_action_BattleSingle)
 
     def _on_ModuleMenuBarClick(self, btn, type):
         if self._to_beContinue(type, btn):
@@ -227,7 +244,9 @@ class Chinese_string_up_puzzle(QMainWindow):
 
         file_menu = menu.addMenu('操作(&c)')
         file_menu.addAction(self.operate_action_auto)
+        self._register_model(self.operate_action_auto)
         file_menu.addAction(self.operate_action_promote)
+        self._register_model(self.operate_action_promote)
 
     def _on_OperateMenuBarClick(self, btn, type):
         if self._to_beContinue(type, btn):
@@ -270,6 +289,7 @@ class Chinese_string_up_puzzle(QMainWindow):
         self.user_input_button = QPushButton('确定')
 
         self.restart_button = QPushButton('重新开始')
+        self._register_model(self.restart_button)
 
         self.user_spell_label = QLabel('我方成语拼音')
         self.user_spell_edit = QLineEdit()
@@ -384,6 +404,7 @@ class Chinese_string_up_puzzle(QMainWindow):
     def _ai_round(self):
         if '停止' == self.user_input_button.text():
             self.user_input_button.setText("确定")
+            self._do_model(False)
             self.auto_timer.stop()
 
         if self.module_action_BattleSingle.isChecked():
@@ -412,6 +433,7 @@ class Chinese_string_up_puzzle(QMainWindow):
 
         if self.operate_action_auto.isChecked():
             if None == self.idiom_promote:
+                self._do_model(False)
                 self.auto_timer.stop()
                 self.user_input_button.setText("确定")
                 self.idiom_used_edit.append('-------结束-------')
@@ -419,6 +441,7 @@ class Chinese_string_up_puzzle(QMainWindow):
             else:
                 self.auto_timer.start(self.cConfigHandle.get_value_int(
                     'common', 'auto_timer_interval', 1)*1000)
+                self._do_model(True)
                 self.user_input_button.setText("停止")
 
     def _do_auto(self):

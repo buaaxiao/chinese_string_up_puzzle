@@ -18,5 +18,4 @@ pyinstaller --clean --noconfirm chinese_string_up_puzzle.spec
 rm -rf build dist logs xcommon/__pycache__
 
 <!-- <TODO> -->
-<TODO>模态控制
 <TODO>安卓、苹果手机APP打包
