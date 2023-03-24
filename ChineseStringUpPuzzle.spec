@@ -26,7 +26,7 @@ exe = EXE(
     a.scripts,
     [],
     exclude_binaries=True,
-    name='chinese_string_up_puzzle',
+    name='ChineseStringUpPuzzle',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
@@ -47,11 +47,11 @@ coll = COLLECT(
     strip=False,
     upx=True,
     upx_exclude=[],
-    name='chinese_string_up_puzzle',
+    name='ChineseStringUpPuzzle',
 )
 app = BUNDLE(
     coll,
-    name='chinese_string_up_puzzle.app',
+    name='ChineseStringUpPuzzle.app',
     icon='image/icon.png',
     bundle_identifier=None,
 )
