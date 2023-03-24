@@ -147,7 +147,7 @@ class Chinese_string_engine(object):
 
         return ai_answer, idiom_promote, idiom_promote_dict
 
-    def _get_answerText(self, idiom, except_dict=[]):
+    def _get_answerText(self, idiom, except_dict=['成语', '拼音']):
         answer_idiom_dict = self.get_idiom_instance(idiom)
         if None == answer_idiom_dict:
             return None
@@ -163,7 +163,6 @@ class Chinese_string_engine(object):
         if None == answer_idiom_dict:
             return None
 
-            # spell = answer_idiom_dict[idiom]['拼音']
         spell = '%s' % ' '.join(
             numpy.hstack(pypinyin.pinyin(idiom)))
 

@@ -11,8 +11,12 @@ from xcommon.xconfig import *
 from chinese_string_enum import *
 from chinese_string_engine import *
 
+FINISH_TAIL = '-------结束-------'
+PROMOTE_TAIL = '-------无提示-------'
 
 # '''成语接龙'''
+
+
 class Chinese_string_up_puzzle(QMainWindow):
     def _vip_control(self,  control_id, btn=None):
         LOG_TRACE(control_id, btn)
@@ -73,6 +77,10 @@ class Chinese_string_up_puzzle(QMainWindow):
 
     def _init_config(self):
         self.cConfigHandle = xConfigHandle(cfg_path)
+        self.display_user = '【' + self.cConfigHandle.get_value_str(
+            'common', 'his_dispaly_user', '我方') + '】'
+        self.display_ai = '【' + self.cConfigHandle.get_value_str(
+            'common', 'his_dispaly_ai', '电脑') + '】'
 
     def _add_moduleMenuBar(self):
         menu = self.menuBar()
@@ -198,29 +206,29 @@ class Chinese_string_up_puzzle(QMainWindow):
             return
 
         LOG_TRACE(type)
-        self.idiom_used_edit.clear()
+        self.idiom_used_list.clear()
         if not enumBarButton_Display.Menu_ControlId_All.value & type.value:
             self.display_action_all.setChecked(False)
         else:
             for item in self.idiom_used['all']:
                 if 'user' == item[0]:
-                    self.idiom_used_edit.append(
-                        self.get_display_user() + item[1])
+                    self.idiom_used_list.addItem(
+                        self.display_user + item[1])
                 elif 'ai' == item[0]:
-                    self.idiom_used_edit.append(
-                        self.get_display_ai() + item[1])
+                    self.idiom_used_list.addItem(
+                        self.display_ai + item[1])
 
         if not enumBarButton_Display.Menu_ControlId_USER.value & type.value:
             self.display_action_user.setChecked(False)
         else:
             for item in self.idiom_used['user']:
-                self.idiom_used_edit.append(self.get_display_user() + item)
+                self.idiom_used_list.addItem(self.display_user + item)
 
         if not enumBarButton_Display.Menu_ControlId_AI.value & type.value:
             self.display_action_ai.setChecked(False)
         else:
             for item in self.idiom_used['ai']:
-                self.idiom_used_edit.append(self.get_display_ai() + item)
+                self.idiom_used_list.addItem(self.display_ai + item)
 
     def _add_operateMenuBar(self):
         menu = self.menuBar()
@@ -256,19 +264,19 @@ class Chinese_string_up_puzzle(QMainWindow):
 
         if enumBarButton_Operate.Menu_ControlId_Work_Promote.value & type.value:
             if btn.isChecked():
-                self.idiom_promote_edit.show()
+                self.idiom_promote_list.show()
                 self.widget.setLayout(self.grid)
             else:
-                self.idiom_promote_edit.hide()
+                self.idiom_promote_list.hide()
                 self.widget.setLayout(self.grid)
 
-            self.idiom_promote_edit.clear()
+            self.idiom_promote_list.clear()
             if btn.isChecked():
                 if not self.answer_idiom_dict_promote:
-                    self.idiom_promote_edit.append('No Promote')
+                    self.idiom_promote_list.addItem(PROMOTE_TAIL)
                 else:
                     for ele in self.answer_idiom_dict_promote:
-                        self.idiom_promote_edit.append(ele)
+                        self.idiom_promote_list.addItem(ele)
 
     def _init_widget(self):
         self.setWindowTitle(self.cConfigHandle.get_value_str(
@@ -283,6 +291,7 @@ class Chinese_string_up_puzzle(QMainWindow):
         self.user_input_label = QLabel('我方')
         self.user_input_edit = QLineEdit()
         self.user_input_edit.setPlaceholderText('我方输入')
+        self._register_model(self.user_input_edit)
         self.user_input_button = QPushButton('确定')
 
         self.restart_button = QPushButton('重新开始')
@@ -315,19 +324,13 @@ class Chinese_string_up_puzzle(QMainWindow):
         self.ai_explain_edit.setPlaceholderText('电脑方成语释义')
         self.ai_explain_edit.setReadOnly(True)
 
-        self.idiom_used_edit = QTextEdit()
-        self.idiom_used_edit.setWordWrapMode(
-            QTextOption.WrapMode.WordWrap)
-        self.idiom_used_edit.setPlaceholderText('已使用成语')
-        self.idiom_used_edit.setReadOnly(True)
-        self.idiom_used_edit.setFixedWidth(211)
+        self.idiom_used_list = QListWidget()
+        self.idiom_used_list.setFixedWidth(211)
+        self._register_model(self.idiom_used_list)
 
-        self.idiom_promote_edit = QTextEdit()
-        self.idiom_promote_edit.setWordWrapMode(
-            QTextOption.WrapMode.WordWrap)
-        self.idiom_promote_edit.setPlaceholderText('智能提示')
-        self.idiom_promote_edit.setReadOnly(True)
-        self.idiom_promote_edit.setFixedWidth(211)
+        self.idiom_promote_list = QListWidget()
+        self.idiom_promote_list.setFixedWidth(211)
+        self._register_model(self.idiom_promote_list)
 
         # 按键绑定
         self.user_input_edit.returnPressed.connect(
@@ -335,6 +338,10 @@ class Chinese_string_up_puzzle(QMainWindow):
         self.user_input_button.clicked.connect(self._ai_round)
         self.restart_button.clicked.connect(
             lambda: self._restart())
+        self.idiom_used_list.itemSelectionChanged.connect(
+            lambda: self._selection_change(self.idiom_used_list))
+        self.idiom_promote_list.itemSelectionChanged.connect(
+            lambda: self._selection_change(self.idiom_promote_list))
 
         # 布局
         self.grid = QGridLayout()
@@ -353,10 +360,10 @@ class Chinese_string_up_puzzle(QMainWindow):
         self.grid.addWidget(self.ai_spell_edit, 4, 1, 1, 2)
         self.grid.addWidget(self.ai_explain_label, 5, 0, 1, 1)
         self.grid.addWidget(self.ai_explain_edit, 5, 1, 1, 2)
-        self.grid.addWidget(self.idiom_used_edit, 0, 3, 6, 1)
-        self.grid.addWidget(self.idiom_promote_edit, 0, 4, 6, 1)
+        self.grid.addWidget(self.idiom_used_list, 0, 3, 6, 1)
+        self.grid.addWidget(self.idiom_promote_list, 0, 4, 6, 1)
         if not self.operate_action_promote.isChecked():
-            self.idiom_promote_edit.hide()
+            self.idiom_promote_list.hide()
 
         self.widget = QWidget()
         self.widget.setLayout(self.grid)
@@ -379,8 +386,8 @@ class Chinese_string_up_puzzle(QMainWindow):
             self.ai_spell_edit.clear()
             self.ai_explain_edit.clear()
 
-            self.idiom_used_edit.clear()
-            self.idiom_promote_edit.clear()
+            self.idiom_used_list.clear()
+            self.idiom_promote_list.clear()
 
         self.data_filepath = progam_path + './data/data.json'
         self.Chinese_string_engine = Chinese_string_engine(
@@ -434,8 +441,8 @@ class Chinese_string_up_puzzle(QMainWindow):
                 self._do_model(False)
                 self.auto_timer.stop()
                 self.user_input_button.setText("确定")
-                self.idiom_used_edit.append('-------结束-------')
-                LOG_INFO('-------结束-------')
+                self.idiom_used_list.addItem(FINISH_TAIL)
+                LOG_INFO(FINISH_TAIL)
             else:
                 self.auto_timer.start(self.cConfigHandle.get_value_int(
                     'common', 'auto_timer_interval', 1)*1000)
@@ -448,34 +455,32 @@ class Chinese_string_up_puzzle(QMainWindow):
 
     def _set_output(self, idiom, type, answer_idiom_dict_promote=[]):
         spell = self.Chinese_string_engine._get_spell(idiom)
-        ANSWER_EXCEPT_DICT = ['成语', '拼音']
-        text = self.Chinese_string_engine._get_answerText(
-            idiom, ANSWER_EXCEPT_DICT)
+        text = self.Chinese_string_engine._get_answerText(idiom)
         if enum_Idiom_Output.ENUM_IDIOM_OUTPUT_USER == type:
             if self.display_action_all.isChecked() or self.display_action_user.isChecked():
-                self.idiom_used_edit.append(self.get_display_user() + idiom)
+                self.idiom_used_list.addItem(self.display_user + idiom)
             self.user_spell_edit.setText(spell)
             self.user_explain_edit.setText(text)
             self.idiom_used['user'].append(idiom)
             self.idiom_used['used'].append(idiom)
             self.idiom_used['all'].append(['user', idiom])
-            LOG_INFO(self.get_display_user() + idiom)
+            LOG_INFO(self.display_user + idiom)
         elif enum_Idiom_Output.ENUM_IDIOM_OUTPUT_AI == type:
             if self.display_action_all.isChecked() or self.display_action_ai.isChecked():
-                self.idiom_used_edit.append(self.get_display_ai() + idiom)
+                self.idiom_used_list.addItem(self.display_ai + idiom)
             self.ai_input_edit.setText(idiom)
             self.ai_spell_edit.setText(spell)
             self.ai_explain_edit.setText(text)
             self.idiom_used['ai'].append(idiom)
             self.idiom_used['used'].append(idiom)
             self.idiom_used['all'].append(['ai', idiom])
-            LOG_INFO(self.get_display_ai() + idiom)
+            LOG_INFO(self.display_ai + idiom)
+            self.idiom_promote_list.clear()
             if 0 == len(answer_idiom_dict_promote):
-                self.idiom_promote_edit.setText("No Promote")
+                self.idiom_promote_list.addItem(PROMOTE_TAIL)
             elif self.operate_action_promote.isChecked():
-                self.idiom_promote_edit.clear()
                 for idPromote in answer_idiom_dict_promote:
-                    self.idiom_promote_edit.append(idPromote)
+                    self.idiom_promote_list.addItem(idPromote)
 
     #  '''检测我方输入成语是否合法'''
     def _check_userInputValid(self, idiom):
@@ -522,15 +527,29 @@ class Chinese_string_up_puzzle(QMainWindow):
 
     def _congratulation(self, idiom, source_type=enum_Idiom_Source.ENUM_IDIOM_SOURCE_AI):
         if not self.operate_action_auto.isChecked() and source_type != enum_Idiom_Source.ENUM_IDIOM_SOURCE_AUTO:
-            self.idiom_used_edit.append('-------结束-------')
+            self.idiom_used_list.addItem(FINISH_TAIL)
             QMessageBox.information(
                 self, '你赢啦', '恭喜，你的成语：\'%s\' 击败了电脑，获得胜利!' % idiom, QMessageBox.StandardButton.Ok)
 
-    def get_display_user(self, index='his_dispaly_user', defalut='【我方】'):
-        return self.cConfigHandle.get_value_str('common', index, defalut)
+    def _selection_change(self, textEdit):
+        itemText = textEdit.currentItem().text()
+        idiom_type = enum_Idiom_Type.ENUM_IDIOM_TYPE_PROMOTE
+        if FINISH_TAIL == itemText or PROMOTE_TAIL == itemText:
+            return
+        elif itemText.startswith(self.display_user):
+            idiom_type = enum_Idiom_Type.ENUM_IDIOM_TYPE_USER
+            idiom = itemText[len(self.display_user):]
+        elif itemText.startswith(self.display_ai):
+            idiom = itemText[len(self.display_ai):]
+            idiom_type = enum_Idiom_Type.ENUM_IDIOM_TYPE_AI
+        else:
+            idiom = itemText
 
-    def get_display_ai(self, index='his_dispaly_ai', defalut='【电脑】'):
-        return self.cConfigHandle.get_value_str('common', index, defalut)
+        text = self.Chinese_string_engine._get_answerText(idiom)
+        spell = self.Chinese_string_engine._get_spell(idiom)
+        self.user_input_edit.setText(idiom)
+        self.user_spell_edit.setText(spell)
+        self.user_explain_edit.setText(text)
 
 
 # '''run'''˝

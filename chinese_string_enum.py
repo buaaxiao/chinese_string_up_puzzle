@@ -48,3 +48,9 @@ class enum_Init_Type(enum.Enum):
 class enum_Idiom_Output(enum.Enum):
     ENUM_IDIOM_OUTPUT_USER = 0
     ENUM_IDIOM_OUTPUT_AI = 1
+
+
+class enum_Idiom_Type(enum.Enum):
+    ENUM_IDIOM_TYPE_USER = 0
+    ENUM_IDIOM_TYPE_AI = 1
+    ENUM_IDIOM_TYPE_PROMOTE = 2
