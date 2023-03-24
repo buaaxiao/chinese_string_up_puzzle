@@ -1,7 +1,7 @@
-*.pyc
-*.log
-*.DS_Store
-build/*
-dist/*
 *_bak
-*.log*
+.DS_Store
+build
+dist
+logs
+beeware
+__pycache__

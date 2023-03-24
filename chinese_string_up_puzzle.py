@@ -14,8 +14,7 @@ from chinese_string_engine import *
 
 # '''成语接龙'''
 class Chinese_string_up_puzzle(QMainWindow):
-    # 暂未实现功能
-    def _to_beContinue(self,  control_id, btn=None):
+    def _vip_control(self,  control_id, btn=None):
         LOG_TRACE(control_id, btn)
         continue_dict = {
             enum_Puzzle_Module.Model_Word: 'word',
@@ -137,7 +136,7 @@ class Chinese_string_up_puzzle(QMainWindow):
         self._register_model(self.module_action_BattleSingle)
 
     def _on_ModuleMenuBarClick(self, btn, type):
-        if self._to_beContinue(type, btn):
+        if self._vip_control(type, btn):
             return
 
         if not btn.isChecked():
@@ -191,7 +190,7 @@ class Chinese_string_up_puzzle(QMainWindow):
         file_menu.addAction(self.display_action_ai)
 
     def _on_DisplayMenuBarClick(self, btn, type):
-        if self._to_beContinue(type, btn):
+        if self._vip_control(type, btn):
             return
 
         if not btn.isChecked():
@@ -239,8 +238,8 @@ class Chinese_string_up_puzzle(QMainWindow):
         self.operate_action_promote.setCheckable(True)
         self.operate_action_promote.triggered.connect(
             lambda: self._on_OperateMenuBarClick(self.operate_action_promote, enumBarButton_Operate.Menu_ControlId_Work_Promote))
-        if 1 == self.cConfigHandle.get_value_int('function', 'promote', 0):
-            self.operate_action_promote.setChecked(True)
+        # if 1 == self.cConfigHandle.get_value_int('function', 'promote', 0):
+        #     self.operate_action_promote.setChecked(True)
 
         file_menu = menu.addMenu('操作(&c)')
         file_menu.addAction(self.operate_action_auto)
@@ -249,7 +248,7 @@ class Chinese_string_up_puzzle(QMainWindow):
         self._register_model(self.operate_action_promote)
 
     def _on_OperateMenuBarClick(self, btn, type):
-        if self._to_beContinue(type, btn):
+        if self._vip_control(type, btn):
             return
 
         if enumBarButton_Operate.Menu_ControlId_Work_Auto.value & type.value:
@@ -258,11 +257,9 @@ class Chinese_string_up_puzzle(QMainWindow):
         if enumBarButton_Operate.Menu_ControlId_Work_Promote.value & type.value:
             if btn.isChecked():
                 self.idiom_promote_edit.show()
-                self.grid.addWidget(self.idiom_promote_edit, 0, 4, 6, 1)
                 self.widget.setLayout(self.grid)
             else:
                 self.idiom_promote_edit.hide()
-                self.grid.removeWidget(self.idiom_promote_edit)
                 self.widget.setLayout(self.grid)
 
             self.idiom_promote_edit.clear()
@@ -357,8 +354,9 @@ class Chinese_string_up_puzzle(QMainWindow):
         self.grid.addWidget(self.ai_explain_label, 5, 0, 1, 1)
         self.grid.addWidget(self.ai_explain_edit, 5, 1, 1, 2)
         self.grid.addWidget(self.idiom_used_edit, 0, 3, 6, 1)
-        if self.operate_action_promote.isChecked():
-            self.grid.addWidget(self.idiom_promote_edit, 0, 4, 6, 1)
+        self.grid.addWidget(self.idiom_promote_edit, 0, 4, 6, 1)
+        if not self.operate_action_promote.isChecked():
+            self.idiom_promote_edit.hide()
 
         self.widget = QWidget()
         self.widget.setLayout(self.grid)
