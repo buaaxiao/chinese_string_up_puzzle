@@ -243,14 +243,11 @@ class Chinese_string_up_puzzle(QMainWindow):
         self.operate_action_promote.setCheckable(True)
         self.operate_action_promote.triggered.connect(
             lambda: self._on_OperateMenuBarClick(self.operate_action_promote, enumBarButton_Operate.Menu_ControlId_Work_Promote))
-        # if 1 == self.cConfigHandle.get_value_int('function', 'promote', 0):
-        #     self.operate_action_promote.setChecked(True)
 
         file_menu = menu.addMenu('操作(&c)')
         file_menu.addAction(self.operate_action_auto)
         self._register_model(self.operate_action_auto)
         file_menu.addAction(self.operate_action_promote)
-        self._register_model(self.operate_action_promote)
 
     def _on_OperateMenuBarClick(self, btn, type):
         if self._vip_control(type, btn):
