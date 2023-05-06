@@ -287,6 +287,8 @@ class Chinese_string_up_puzzle(QMainWindow):
         self.user_input_edit.setPlaceholderText('我方输入')
         self._register_model(self.user_input_edit)
         self.user_input_button = QPushButton('确定')
+        self.user_promote_button = QPushButton('补全')
+        self._register_model(self.user_promote_button)
 
         self.restart_button = QPushButton('重新开始')
         self._register_model(self.restart_button)
@@ -330,6 +332,7 @@ class Chinese_string_up_puzzle(QMainWindow):
         self.user_input_edit.returnPressed.connect(
             self.user_input_button.click)
         self.user_input_button.clicked.connect(self._ai_round)
+        self.user_promote_button.clicked.connect(self._user_complete)
         self.restart_button.clicked.connect(
             lambda: self._restart())
         self.idiom_used_list.itemSelectionChanged.connect(
@@ -343,19 +346,20 @@ class Chinese_string_up_puzzle(QMainWindow):
         self.grid.addWidget(self.user_input_label, 0, 0, 1, 1)
         self.grid.addWidget(self.user_input_edit, 0, 1, 1, 1)
         self.grid.addWidget(self.user_input_button, 0, 2, 1, 1)
+        self.grid.addWidget(self.user_promote_button, 0, 3, 1, 1)
         self.grid.addWidget(self.user_spell_label, 1, 0, 1, 1)
-        self.grid.addWidget(self.user_spell_edit, 1, 1, 1, 2)
+        self.grid.addWidget(self.user_spell_edit, 1, 1, 1, 3)
         self.grid.addWidget(self.user_explain_label, 2, 0, 1, 1)
-        self.grid.addWidget(self.user_explain_edit, 2, 1, 1, 2)
+        self.grid.addWidget(self.user_explain_edit, 2, 1, 1, 3)
         self.grid.addWidget(self.ai_input_label, 3, 0, 1, 1)
-        self.grid.addWidget(self.ai_input_edit, 3, 1, 1, 1)
-        self.grid.addWidget(self.restart_button, 3, 2, 1, 1)
+        self.grid.addWidget(self.ai_input_edit, 3, 1, 1, 2)
+        self.grid.addWidget(self.restart_button, 3, 3, 1, 1)
         self.grid.addWidget(self.ai_spell_label, 4, 0, 1, 1)
-        self.grid.addWidget(self.ai_spell_edit, 4, 1, 1, 2)
+        self.grid.addWidget(self.ai_spell_edit, 4, 1, 1, 3)
         self.grid.addWidget(self.ai_explain_label, 5, 0, 1, 1)
-        self.grid.addWidget(self.ai_explain_edit, 5, 1, 1, 2)
-        self.grid.addWidget(self.idiom_used_list, 0, 3, 6, 1)
-        self.grid.addWidget(self.idiom_promote_list, 0, 4, 6, 1)
+        self.grid.addWidget(self.ai_explain_edit, 5, 1, 1, 3)
+        self.grid.addWidget(self.idiom_used_list, 0, 4, 6, 1)
+        self.grid.addWidget(self.idiom_promote_list, 0, 5, 6, 1)
         if not self.operate_action_promote.isChecked():
             self.idiom_promote_list.hide()
 
@@ -442,6 +446,11 @@ class Chinese_string_up_puzzle(QMainWindow):
                     'common', 'auto_timer_interval', 1)*1000)
                 self._do_model(True)
                 self.user_input_button.setText("停止")
+
+    def _user_complete(self):
+        idiom_hint = self.Chinese_string_engine.get_nextIdomByKey(self.user_input_edit.text().strip(), self.idiom_used['used'])
+        if None != idiom_hint:
+            self.user_input_edit.setText(idiom_hint)
 
     def _do_auto(self):
         self.user_input_edit.setText(self.idiom_promote)

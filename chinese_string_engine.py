@@ -147,6 +147,22 @@ class Chinese_string_engine(object):
 
         return ai_answer, idiom_promote, idiom_promote_dict
 
+    def get_nextIdomByKey(self, idiom_key, except_dict=[]):
+        if None == idiom_key:
+            return None
+        idiom_dict_data = self.idiom_dict['idiom']
+        
+        if idiom_key[0] not in list(idiom_dict_data.keys()):
+            return None
+        answer_list_tmp = idiom_dict_data[idiom_key[0]]
+        answer_list = list(filter(
+                        lambda word: word.startswith(idiom_key), answer_list_tmp))
+        
+        if 0 != len(answer_list):
+            idiom_answer = random.choice(
+                list(filter(lambda x: x not in except_dict, answer_list)))
+        return idiom_answer
+
     def _get_answerText(self, idiom, except_dict=['成语', '拼音']):
         answer_idiom_dict = self.get_idiom_instance(idiom)
         if None == answer_idiom_dict:
@@ -210,40 +226,41 @@ class Chinese_string_engine(object):
 if __name__ == '__main__':
     data_filepath = progam_path + './data/data.json'
     engine = Chinese_string_engine(data_filepath)
-    idiom = '白雪难和'
+    idiom = '白雪'
     except_dict = {}
-    LOG_TRACE(engine._get_nextIdiom(
-        idiom, except_dict, enum_Puzzle_Module.Model_All))
-    LOG_TRACE(engine._get_nextIdiom(
-        idiom, except_dict, enum_Puzzle_Module.Model_Word))
-    LOG_TRACE(engine._get_nextIdiom(
-        idiom, except_dict, enum_Puzzle_Module.Model_LzPinyin))
-    LOG_TRACE(engine._get_nextIdiom(
-        idiom, except_dict, enum_Puzzle_Module.Model_Pinyin))
-    LOG_TRACE(engine._get_nextIdiom(
-        idiom, except_dict, enum_Puzzle_Module.Model_Multi))
+    LOG_INFO(engine.get_nextIdomByKey(idiom, except_dict))
+    # LOG_TRACE(engine._get_nextIdiom(
+    #     idiom, except_dict, enum_Puzzle_Module.Model_All))
+    # LOG_TRACE(engine._get_nextIdiom(
+    #     idiom, except_dict, enum_Puzzle_Module.Model_Word))
+    # LOG_TRACE(engine._get_nextIdiom(
+    #     idiom, except_dict, enum_Puzzle_Module.Model_LzPinyin))
+    # LOG_TRACE(engine._get_nextIdiom(
+    #     idiom, except_dict, enum_Puzzle_Module.Model_Pinyin))
+    # LOG_TRACE(engine._get_nextIdiom(
+    #     idiom, except_dict, enum_Puzzle_Module.Model_Multi))
 
-    LOG_TRACE(engine._get_answerText(idiom))
-    LOG_TRACE(engine.get_idiom_instance(idiom))
+    # LOG_TRACE(engine._get_answerText(idiom))
+    # LOG_TRACE(engine.get_idiom_instance(idiom))
 
-    if len(sys.argv) > 1 and 'dict' == sys.argv[1]:
-        engine._generate_dict(progam_path + './data/data_source.txt')
+    # if len(sys.argv) > 1 and 'dict' == sys.argv[1]:
+    #     engine._generate_dict(progam_path + './data/data_source.txt')
 
-    continue_dict = {
-        # enum_Puzzle_Module.Model_All: 'all',
-        enum_Puzzle_Module.Model_Word: 'word',
-        enum_Puzzle_Module.Model_LzPinyin: 'lzpinyin',
-        enum_Puzzle_Module.Model_Pinyin: 'pinyin',
-        enum_Puzzle_Module.Model_Multi: 'multi',
-        enum_Puzzle_Module.Model_BattleSingle: 'battlesingle',
-        enumBarButton_Operate.Menu_ControlId_Work_Promote: 'promote',
-        enumBarButton_Operate.Menu_ControlId_Work_Auto: 'auto',
-    }
+    # continue_dict = {
+    #     # enum_Puzzle_Module.Model_All: 'all',
+    #     enum_Puzzle_Module.Model_Word: 'word',
+    #     enum_Puzzle_Module.Model_LzPinyin: 'lzpinyin',
+    #     enum_Puzzle_Module.Model_Pinyin: 'pinyin',
+    #     enum_Puzzle_Module.Model_Multi: 'multi',
+    #     enum_Puzzle_Module.Model_BattleSingle: 'battlesingle',
+    #     enumBarButton_Operate.Menu_ControlId_Work_Promote: 'promote',
+    #     enumBarButton_Operate.Menu_ControlId_Work_Auto: 'auto',
+    # }
 
-    for control_id in continue_dict:
-        LOG_TRACE(type(control_id), type(continue_dict[control_id]))
-        LOG_TRACE(control_id, continue_dict[control_id])
+    # for control_id in continue_dict:
+    #     LOG_TRACE(type(control_id), type(continue_dict[control_id]))
+    #     LOG_TRACE(control_id, continue_dict[control_id])
 
-    LOG_TRACE(pypinyin.pinyin('奥', heteronym=True)[0])
-    LOG_TRACE(pypinyin.pinyin('奥', heteronym=False)[0])
-    LOG_TRACE(pypinyin.lazy_pinyin('奥')[0])
+    # LOG_TRACE(pypinyin.pinyin('奥', heteronym=True)[0])
+    # LOG_TRACE(pypinyin.pinyin('奥', heteronym=False)[0])
+    # LOG_TRACE(pypinyin.lazy_pinyin('奥')[0])
