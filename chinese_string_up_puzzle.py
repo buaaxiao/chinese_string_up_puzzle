@@ -47,6 +47,10 @@ class Chinese_string_up_puzzle(QMainWindow):
         LOG_INFO('---------------------------开始接龙---------------------------')
         super(Chinese_string_up_puzzle, self).__init__(parent)
 
+        self.data_filepath = progam_path + './data/stringup.db'
+        self.Chinese_string_engine = Chinese_string_engine(
+            self.data_filepath, default_module=enum_Puzzle_Module.Model_All)
+        
         # 模态注册
         self._init_model()
         # 读取配置文件
@@ -270,7 +274,7 @@ class Chinese_string_up_puzzle(QMainWindow):
                     self.idiom_promote_list.addItem(PROMOTE_TAIL)
                 else:
                     for ele in self.answer_idiom_dict_promote:
-                        self.idiom_promote_list.addItem(ele)
+                        self.idiom_promote_list.addItem(ele['idiom'])
 
     def _init_widget(self):
         self.setWindowTitle(self.cConfigHandle.get_value_str(
@@ -387,10 +391,6 @@ class Chinese_string_up_puzzle(QMainWindow):
             self.idiom_used_list.clear()
             self.idiom_promote_list.clear()
 
-        self.data_filepath = progam_path + './data/data.json'
-        self.Chinese_string_engine = Chinese_string_engine(
-            self.data_filepath, default_module=enum_Puzzle_Module.Model_All)
-
         self.idiom = None
         self.ai_answer = None
         self.idiom_used = {}
@@ -398,7 +398,7 @@ class Chinese_string_up_puzzle(QMainWindow):
         self.idiom_used['user'] = []
         self.idiom_used['ai'] = []
         self.idiom_used['used'] = []
-        self.answer_idiom_dict_promote = {}
+        self.answer_idiom_dict_promote = []
 
     def _init_timer(self):
         self.auto_timer = QTimer()
@@ -419,20 +419,23 @@ class Chinese_string_up_puzzle(QMainWindow):
             return
 
         # 输入检查
-        if not self._check_userInputValid(idiom):
+        flag, results = self._check_userInputValid(idiom)
+        if False == flag:
             return
 
         self.idiom = idiom
-        self._set_output(self.idiom, enum_Idiom_Output.ENUM_IDIOM_OUTPUT_USER)
+        self._set_output(results[0], enum_Idiom_Output.ENUM_IDIOM_OUTPUT_USER)
 
-        self.ai_answer, self.idiom_promote, self.answer_idiom_dict_promote = self.Chinese_string_engine.get_nextIdom(
+        self.ai_results, self.answer_idiom_dict_promote = self.Chinese_string_engine._get_nextIdiom(
             self.idiom, self.idiom_used['used'])
-        LOG_TRACE(self.ai_answer)
-        if None == self.ai_answer:
+        LOG_TRACE(self.ai_results)
+        LOG_TRACE("self.answer_idiom_dict_promote")
+        LOG_TRACE(self.answer_idiom_dict_promote)
+        if 0 == len(self.ai_results):
             self._congratulation(self.idiom)
         else:
             self._set_output(
-                self.ai_answer, enum_Idiom_Output.ENUM_IDIOM_OUTPUT_AI, self.answer_idiom_dict_promote)
+                self.ai_results[0], enum_Idiom_Output.ENUM_IDIOM_OUTPUT_AI, self.answer_idiom_dict_promote)
 
         if self.operate_action_auto.isChecked():
             if None == self.idiom_promote:
@@ -448,17 +451,22 @@ class Chinese_string_up_puzzle(QMainWindow):
                 self.user_input_button.setText("停止")
 
     def _user_complete(self):
-        idiom_hint = self.Chinese_string_engine.get_nextIdomByKey(self.user_input_edit.text().strip(), self.idiom_used['used'])
-        if None != idiom_hint:
-            self.user_input_edit.setText(idiom_hint)
+        if not self.user_input_edit.text().strip():
+            return
+        results = self.Chinese_string_engine.get_nextIdomByKey(self.user_input_edit.text().strip(), self.idiom_used['used'])
+        if 0 != len(results):
+            self.user_input_edit.setText(results[0]['idiom'])
+            self.user_input_button.clicked.emit()
 
     def _do_auto(self):
         self.user_input_edit.setText(self.idiom_promote)
         self.user_input_button.clicked.emit()
 
-    def _set_output(self, idiom, type, answer_idiom_dict_promote=[]):
-        spell = self.Chinese_string_engine._get_spell(idiom)
-        text = self.Chinese_string_engine._get_answerText(idiom)
+    def _set_output(self, result, type, answer_idiom_dict_promote=[]):
+        LOG_TRACE(result)
+        idiom = self.Chinese_string_engine._get_idiom(result)
+        spell = self.Chinese_string_engine._get_spell(result)
+        text = self.Chinese_string_engine._get_answerText(result)
         if enum_Idiom_Output.ENUM_IDIOM_OUTPUT_USER == type:
             if self.display_action_all.isChecked() or self.display_action_user.isChecked():
                 self._insertOutput(self.display_user + idiom)
@@ -483,50 +491,32 @@ class Chinese_string_up_puzzle(QMainWindow):
                 self.idiom_promote_list.addItem(PROMOTE_TAIL)
             elif self.operate_action_promote.isChecked():
                 for idPromote in answer_idiom_dict_promote:
-                    self.idiom_promote_list.addItem(idPromote)
+                    self.idiom_promote_list.addItem(idPromote['idiom'])
 
     #  '''检测我方输入成语是否合法'''
     def _check_userInputValid(self, idiom):
+        results = []
         # 成语已使用
         if idiom in self.idiom_used['used']:
             QMessageBox.warning(
                 self, '成语已使用', '你输入的成语已在本次接龙中使用, 请重新输入!', QMessageBox.StandardButton.Ok)
-            return False
+            return False, results
 
-        if not self.Chinese_string_engine.idiom_exists(idiom):
+        results = self.Chinese_string_engine.get_idiom_instance(idiom)
+        if 0 == len(results):
             QMessageBox.warning(
                 self, '输入错误', '系统成语库中无该记录!', QMessageBox.StandardButton.Ok)
-            return False
+            return False, results
 
         if None != self.ai_answer:
-            retCheck = self.Chinese_string_engine.check_idiom(
+            retCheck, chkmsg = self.Chinese_string_engine.check_idiom(
                 idiom, self.ai_answer)
-            if enum_Puzzle_Unmatch.Unmatch_All == retCheck:
+            if 0 != retCheck:
                 QMessageBox.warning(
-                    self, '输入错误', '首尾字及拼音匹配失败!', QMessageBox.StandardButton.Ok)
-                return False
+                    self, '输入错误', chkmsg, QMessageBox.StandardButton.Ok)
+                return False, results
 
-            if enum_Puzzle_Unmatch.Unmatch_Word == retCheck:
-                QMessageBox.warning(
-                    self, '输入错误', '首尾字匹配失败!', QMessageBox.StandardButton.Ok)
-                return False
-
-            if enum_Puzzle_Unmatch.Unmatch_LzPinyin == retCheck:
-                QMessageBox.warning(
-                    self, '输入错误', '首尾字拼音模糊匹配失败!',   QMessageBox.StandardButton.Ok)
-                return False
-
-            if enum_Puzzle_Unmatch.Unmatch_Pinyin == retCheck:
-                QMessageBox.warning(
-                    self, '输入错误', '首尾字拼音精确匹配失败!',  QMessageBox.StandardButton.Ok)
-                return False
-
-            if enum_Puzzle_Unmatch.Unmatch_Multi == retCheck:
-                QMessageBox.warning(
-                    self, '输入错误', '首尾多音字匹配失败!',  QMessageBox.StandardButton.Ok)
-                return False
-
-        return True
+        return True, results
 
     def _congratulation(self, idiom, source_type=enum_Idiom_Source.ENUM_IDIOM_SOURCE_AI):
         if not self.operate_action_auto.isChecked() and source_type != enum_Idiom_Source.ENUM_IDIOM_SOURCE_AUTO:
@@ -548,11 +538,13 @@ class Chinese_string_up_puzzle(QMainWindow):
         else:
             idiom = itemText
 
-        text = self.Chinese_string_engine._get_answerText(idiom)
-        spell = self.Chinese_string_engine._get_spell(idiom)
-        self.user_input_edit.setText(idiom)
-        self.user_spell_edit.setText(spell)
-        self.user_explain_edit.setText(text)
+        instance = self.Chinese_string_engine.get_idiom_instance(idiom)
+        if 0 != len(instance):
+            text = self.Chinese_string_engine._get_answerText(instance[0])
+            spell = self.Chinese_string_engine._get_spell(instance[0])
+            self.user_input_edit.setText(idiom)
+            self.user_spell_edit.setText(spell)
+            self.user_explain_edit.setText(text)
 
     def _insertOutput(self, output):
         self.idiom_used_list.addItem(output)

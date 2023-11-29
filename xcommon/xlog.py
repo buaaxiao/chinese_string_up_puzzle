@@ -34,6 +34,8 @@ class xLogger(object):
         logname = os.path.join(logpath, logname)
         # 日志级别
         level = cConfigHandle.get_value_str('log', 'level', 'error').upper()
+        if level == 'TRACE':
+            level = 'DEBUG'
 
         self.logger = logging.getLogger(name)
         self.logger.setLevel(level)
@@ -66,6 +68,8 @@ class xLogger(object):
 
     def log_fuc(self, level, message):
         msg = message
+        if level == 'TRACE':
+            self.debug(msg)
         if level == 'DEBUG':
             self.debug(msg)
         if level == 'INFO':
@@ -108,7 +112,7 @@ def LOG_TRACE(*params_a):
     strRet = ''
     for each in params_a:
         strRet += ' ' + str(each)
-    logg.log_fuc('DEBUG', strRet)
+    logg.log_fuc('TRACE', strRet)
 
 
 def LOG_INFO(*params_a):

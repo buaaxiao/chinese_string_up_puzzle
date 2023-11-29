@@ -17,7 +17,7 @@
         <promote>1</promote>
     </function>
     <log>
-        <level>info</level>
+        <level>trace</level>
         <path>./logs</path>
         <size>0</size>
         <num>2</num>
