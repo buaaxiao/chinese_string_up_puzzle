@@ -2,7 +2,6 @@
 # -*- coding : utf-8-*-
 # coding:unicode_escape
 
-import sys
 from PyQt6.QtGui import *
 from PyQt6.QtCore import *
 from PyQt6.QtWidgets import *
@@ -20,11 +19,11 @@ class Chinese_string_up_puzzle(QMainWindow):
     def _vip_control(self,  control_id, btn=None):
         LOG_TRACE(control_id, btn)
         continue_dict = {
-            enum_Puzzle_Module.Model_Word: 'word',
-            enum_Puzzle_Module.Model_LzPinyin: 'lzpinyin',
-            enum_Puzzle_Module.Model_Pinyin: 'pinyin',
-            enum_Puzzle_Module.Model_Multi: 'multi',
-            enum_Puzzle_Module.Model_BattleSingle: 'battlesingle',
+            enum_Puzzle_Module.Module_Word: 'word',
+            enum_Puzzle_Module.Module_LzPinyin: 'lzpinyin',
+            enum_Puzzle_Module.Module_Pinyin: 'pinyin',
+            enum_Puzzle_Module.Module_Multi: 'multi',
+            enum_Puzzle_Module.Module_BattleSingle: 'battlesingle',
             enumBarButton_Operate.Menu_ControlId_Work_Promote: 'promote',
             enumBarButton_Operate.Menu_ControlId_Work_Auto: 'auto',
         }
@@ -49,7 +48,7 @@ class Chinese_string_up_puzzle(QMainWindow):
 
         self.data_filepath = progam_path + './data/stringup.db'
         self.Chinese_string_engine = Chinese_string_engine(
-            self.data_filepath, default_module=enum_Puzzle_Module.Model_All)
+            self.data_filepath, default_module=enum_Puzzle_Module.Module_All)
         
         # 模态注册
         self._init_model()
@@ -69,13 +68,13 @@ class Chinese_string_up_puzzle(QMainWindow):
         self._init_data()
 
     def _init_model(self):
-        self.model_set = []
+        self.Module_set = []
 
     def _register_model(self, btn):
-        self.model_set.append(btn)
+        self.Module_set.append(btn)
 
     def _do_model(self, bModel=False):
-        for btn in self.model_set:
+        for btn in self.Module_set:
             btn.setDisabled(bModel)
 
     def _init_config(self):
@@ -93,44 +92,44 @@ class Chinese_string_up_puzzle(QMainWindow):
         self.module_action_all.setStatusTip('完全匹配：支持首尾读音和字都匹配')
         self.module_action_all.setCheckable(True)
         self.module_action_all.setChecked(True)
-        self.module_action = enum_Puzzle_Module.Model_All
+        self.module_action = enum_Puzzle_Module.Module_All
         self.module_action_all.triggered.connect(
-            lambda: self._on_ModuleMenuBarClick(self.module_action_all, enum_Puzzle_Module.Model_All))
+            lambda: self._on_ModuleMenuBarClick(self.module_action_all, enum_Puzzle_Module.Module_All))
 
         self.module_action_word = QAction(
             QIcon(progam_path + './image/match_word.jpg'), '字匹配', self)
         self.module_action_word.setStatusTip('字匹配：支持首尾字匹配')
         self.module_action_word.setCheckable(True)
         self.module_action_word.triggered.connect(
-            lambda: self._on_ModuleMenuBarClick(self.module_action_word, enum_Puzzle_Module.Model_Word))
+            lambda: self._on_ModuleMenuBarClick(self.module_action_word, enum_Puzzle_Module.Module_Word))
 
         self.module_action_lzpinyin = QAction(
             QIcon(progam_path + './image/match_lzpinyin.jpg'), '读音模糊匹配', self)
         self.module_action_lzpinyin.setStatusTip('读音模糊匹配：支持首尾读音模糊匹配')
         self.module_action_lzpinyin.setCheckable(True)
         self.module_action_lzpinyin.triggered.connect(
-            lambda: self._on_ModuleMenuBarClick(self.module_action_lzpinyin, enum_Puzzle_Module.Model_LzPinyin))
+            lambda: self._on_ModuleMenuBarClick(self.module_action_lzpinyin, enum_Puzzle_Module.Module_LzPinyin))
 
         self.module_action_pinyin = QAction(
             QIcon(progam_path + './image/match_pinyin.jpg'), '读音匹配', self)
         self.module_action_pinyin.setStatusTip('读音匹配：支持首尾读音完全匹配')
         self.module_action_pinyin.setCheckable(True)
         self.module_action_pinyin.triggered.connect(
-            lambda: self._on_ModuleMenuBarClick(self.module_action_pinyin, enum_Puzzle_Module.Model_Pinyin))
+            lambda: self._on_ModuleMenuBarClick(self.module_action_pinyin, enum_Puzzle_Module.Module_Pinyin))
 
         self.module_action_multi = QAction(
             QIcon(progam_path + './image/match_multi.jpg'), '多音字匹配', self)
         self.module_action_multi.setStatusTip('多音字模式：支持首尾多音字匹配')
         self.module_action_multi.setCheckable(True)
         self.module_action_multi.triggered.connect(
-            lambda: self._on_ModuleMenuBarClick(self.module_action_multi, enum_Puzzle_Module.Model_Multi))
+            lambda: self._on_ModuleMenuBarClick(self.module_action_multi, enum_Puzzle_Module.Module_Multi))
 
         self.module_action_BattleSingle = QAction(
             QIcon(progam_path + './image/match_battle_single.jpg'), '单回合', self)
         self.module_action_BattleSingle.setStatusTip('单回合模式：一问一答')
         self.module_action_BattleSingle.setCheckable(True)
         self.module_action_BattleSingle.triggered.connect(
-            lambda: self._on_ModuleMenuBarClick(self.module_action_BattleSingle, enum_Puzzle_Module.Model_BattleSingle))
+            lambda: self._on_ModuleMenuBarClick(self.module_action_BattleSingle, enum_Puzzle_Module.Module_BattleSingle))
 
         file_menu = menu.addMenu('模式选择(&m)')
         file_menu.addAction(self.module_action_all)
@@ -156,17 +155,17 @@ class Chinese_string_up_puzzle(QMainWindow):
 
         self.Chinese_string_engine.set_model(type)
 
-        if not enum_Puzzle_Module.Model_All.value & type.value:
+        if not enum_Puzzle_Module.Module_All.value & type.value:
             self.module_action_all.setChecked(False)
-        if not enum_Puzzle_Module.Model_Word.value & type.value:
+        if not enum_Puzzle_Module.Module_Word.value & type.value:
             self.module_action_word.setChecked(False)
-        if not enum_Puzzle_Module.Model_LzPinyin.value & type.value:
+        if not enum_Puzzle_Module.Module_LzPinyin.value & type.value:
             self.module_action_lzpinyin.setChecked(False)
-        if not enum_Puzzle_Module.Model_Pinyin.value & type.value:
+        if not enum_Puzzle_Module.Module_Pinyin.value & type.value:
             self.module_action_pinyin.setChecked(False)
-        if not enum_Puzzle_Module.Model_Multi.value & type.value:
+        if not enum_Puzzle_Module.Module_Multi.value & type.value:
             self.module_action_multi.setChecked(False)
-        if not enum_Puzzle_Module.Model_BattleSingle.value & type.value:
+        if not enum_Puzzle_Module.Module_BattleSingle.value & type.value:
             self.module_action_BattleSingle.setChecked(False)
 
     def _add_displayMenuBar(self):
@@ -372,24 +371,24 @@ class Chinese_string_up_puzzle(QMainWindow):
         self.setCentralWidget(self.widget)
 
     def _restart(self):
-        puzzle_model = self.Chinese_string_engine.get_model()
+        puzzle_module = self.Chinese_string_engine.get_model()
         self._init_data()
-        self.Chinese_string_engine.set_model(puzzle_model)
+        self.Chinese_string_engine.set_model(puzzle_module)
 
     # '''数据加载'''
     def _init_data(self):
         LOG_INFO('数据加载')
-        if not self.module_action_BattleSingle.isChecked():
-            self.user_input_edit.clear()
-            self.user_spell_edit.clear()
-            self.user_explain_edit.clear()
+        # if not self.module_action_BattleSingle.isChecked():
+        self.user_input_edit.clear()
+        self.user_spell_edit.clear()
+        self.user_explain_edit.clear()
 
-            self.ai_input_edit.clear()
-            self.ai_spell_edit.clear()
-            self.ai_explain_edit.clear()
+        self.ai_input_edit.clear()
+        self.ai_spell_edit.clear()
+        self.ai_explain_edit.clear()
 
-            self.idiom_used_list.clear()
-            self.idiom_promote_list.clear()
+        self.idiom_used_list.clear()
+        self.idiom_promote_list.clear()
 
         self.idiom = None
         self.ai_answer = None
@@ -410,9 +409,6 @@ class Chinese_string_up_puzzle(QMainWindow):
             self._do_model(False)
             self.auto_timer.stop()
 
-        if self.module_action_BattleSingle.isChecked():
-            self._init_data()
-
         # 无输入或者输入未改变
         idiom = self.user_input_edit.text().strip()
         if not idiom or self.idiom == idiom:
@@ -420,17 +416,17 @@ class Chinese_string_up_puzzle(QMainWindow):
 
         # 输入检查
         flag, results = self._check_userInputValid(idiom)
-        if False == flag:
+        if False == flag or 0 == len(results):
             return
 
         self.idiom = idiom
         self._set_output(results[0], enum_Idiom_Output.ENUM_IDIOM_OUTPUT_USER)
 
-        self.ai_results, self.answer_idiom_dict_promote = self.Chinese_string_engine._get_nextIdiom(
+        self.ai_results, self.answer_idiom_dict_promote = self.Chinese_string_engine.get_nextIdiom(
             self.idiom, self.idiom_used['used'])
         LOG_TRACE(self.ai_results)
         LOG_TRACE("self.answer_idiom_dict_promote")
-        LOG_TRACE(self.answer_idiom_dict_promote)
+        LOG_INFO(self.answer_idiom_dict_promote)
         if 0 == len(self.ai_results):
             self._congratulation(self.idiom)
         else:
@@ -438,7 +434,7 @@ class Chinese_string_up_puzzle(QMainWindow):
                 self.ai_results[0], enum_Idiom_Output.ENUM_IDIOM_OUTPUT_AI, self.answer_idiom_dict_promote)
 
         if self.operate_action_auto.isChecked():
-            if None == self.idiom_promote:
+            if 0 == len(self.answer_idiom_dict_promote):
                 self._do_model(False)
                 self.auto_timer.stop()
                 self.user_input_button.setText("确定")
@@ -459,21 +455,23 @@ class Chinese_string_up_puzzle(QMainWindow):
             self.user_input_button.clicked.emit()
 
     def _do_auto(self):
-        self.user_input_edit.setText(self.idiom_promote)
-        self.user_input_button.clicked.emit()
+        if 0 != len(self.answer_idiom_dict_promote):
+            self.user_input_edit.setText(self.answer_idiom_dict_promote[0]['idiom'])
+            self.user_input_button.clicked.emit()
 
     def _set_output(self, result, type, answer_idiom_dict_promote=[]):
         LOG_TRACE(result)
-        idiom = self.Chinese_string_engine._get_idiom(result)
-        spell = self.Chinese_string_engine._get_spell(result)
-        text = self.Chinese_string_engine._get_answerText(result)
+        idiom = self.Chinese_string_engine.get_idiom(result)
+        spell = self.Chinese_string_engine.get_spell(result)
+        text = self.Chinese_string_engine.get_answerText(result)
         if enum_Idiom_Output.ENUM_IDIOM_OUTPUT_USER == type:
             if self.display_action_all.isChecked() or self.display_action_user.isChecked():
                 self._insertOutput(self.display_user + idiom)
             self.user_spell_edit.setText(spell)
             self.user_explain_edit.setText(text)
             self.idiom_used['user'].append(idiom)
-            self.idiom_used['used'].append(idiom)
+            if not self.module_action_BattleSingle.isChecked():
+                self.idiom_used['used'].append(idiom)
             self.idiom_used['all'].append(['user', idiom])
             LOG_INFO(self.display_user + idiom)
         elif enum_Idiom_Output.ENUM_IDIOM_OUTPUT_AI == type:
@@ -483,7 +481,8 @@ class Chinese_string_up_puzzle(QMainWindow):
             self.ai_spell_edit.setText(spell)
             self.ai_explain_edit.setText(text)
             self.idiom_used['ai'].append(idiom)
-            self.idiom_used['used'].append(idiom)
+            if not self.module_action_BattleSingle.isChecked():
+                self.idiom_used['used'].append(idiom)
             self.idiom_used['all'].append(['ai', idiom])
             LOG_INFO(self.display_ai + idiom)
             self.idiom_promote_list.clear()
@@ -540,15 +539,16 @@ class Chinese_string_up_puzzle(QMainWindow):
 
         instance = self.Chinese_string_engine.get_idiom_instance(idiom)
         if 0 != len(instance):
-            text = self.Chinese_string_engine._get_answerText(instance[0])
-            spell = self.Chinese_string_engine._get_spell(instance[0])
+            text = self.Chinese_string_engine.get_answerText(instance[0])
+            spell = self.Chinese_string_engine.get_spell(instance[0])
             self.user_input_edit.setText(idiom)
             self.user_spell_edit.setText(spell)
             self.user_explain_edit.setText(text)
 
     def _insertOutput(self, output):
         self.idiom_used_list.addItem(output)
-        self.idiom_used_list.scrollToBottom()
+        if 0:
+            self.idiom_used_list.scrollToBottom()
 
 
 # '''run'''˝

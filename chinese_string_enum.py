@@ -5,12 +5,12 @@ import enum
 
 # '''枚举定义'''
 class enum_Puzzle_Module(enum.Enum):
-    Model_All = 0b1
-    Model_Word = 0b10
-    Model_LzPinyin = 0b100
-    Model_Pinyin = 0b1000
-    Model_Multi = 0b10000
-    Model_BattleSingle = 0b100000
+    Module_All = 0b1
+    Module_Word = 0b10
+    Module_LzPinyin = 0b100
+    Module_Pinyin = 0b1000
+    Module_Multi = 0b10000
+    Module_BattleSingle = 0b100000
 
 
 class enum_Puzzle_Unmatch(enum.Enum):
