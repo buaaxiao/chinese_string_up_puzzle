@@ -10,7 +10,6 @@ class enum_Puzzle_Module(enum.Enum):
     Module_LzPinyin = 0b100
     Module_Pinyin = 0b1000
     Module_Multi = 0b10000
-    Module_BattleSingle = 0b100000
 
 
 class enum_Puzzle_Unmatch(enum.Enum):
@@ -31,6 +30,7 @@ class enumBarButton_Display(enum.Enum):
 class enumBarButton_Operate(enum.Enum):
     Menu_ControlId_Work_Auto = 0b1
     Menu_ControlId_Work_Promote = 0b10
+    Menu_ControlId_Work_BattleSingle = 0b1000
 
 
 class enum_Idiom_Source(enum.Enum):

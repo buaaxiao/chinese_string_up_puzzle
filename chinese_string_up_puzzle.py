@@ -23,7 +23,7 @@ class Chinese_string_up_puzzle(QMainWindow):
             enum_Puzzle_Module.Module_LzPinyin: 'lzpinyin',
             enum_Puzzle_Module.Module_Pinyin: 'pinyin',
             enum_Puzzle_Module.Module_Multi: 'multi',
-            enum_Puzzle_Module.Module_BattleSingle: 'battlesingle',
+            enumBarButton_Operate.Menu_ControlId_Work_BattleSingle: 'battlesingle',
             enumBarButton_Operate.Menu_ControlId_Work_Promote: 'promote',
             enumBarButton_Operate.Menu_ControlId_Work_Auto: 'auto',
         }
@@ -124,13 +124,6 @@ class Chinese_string_up_puzzle(QMainWindow):
         self.module_action_multi.triggered.connect(
             lambda: self._on_ModuleMenuBarClick(self.module_action_multi, enum_Puzzle_Module.Module_Multi))
 
-        self.module_action_BattleSingle = QAction(
-            QIcon(progam_path + './image/match_battle_single.jpg'), '单回合', self)
-        self.module_action_BattleSingle.setStatusTip('单回合模式：一问一答')
-        self.module_action_BattleSingle.setCheckable(True)
-        self.module_action_BattleSingle.triggered.connect(
-            lambda: self._on_ModuleMenuBarClick(self.module_action_BattleSingle, enum_Puzzle_Module.Module_BattleSingle))
-
         file_menu = menu.addMenu('模式选择(&m)')
         file_menu.addAction(self.module_action_all)
         self._register_model(self.module_action_all)
@@ -142,8 +135,6 @@ class Chinese_string_up_puzzle(QMainWindow):
         self._register_model(self.module_action_pinyin)
         file_menu.addAction(self.module_action_multi)
         self._register_model(self.module_action_multi)
-        file_menu.addAction(self.module_action_BattleSingle)
-        self._register_model(self.module_action_BattleSingle)
 
     def _on_ModuleMenuBarClick(self, btn, type):
         if self._vip_control(type, btn):
@@ -165,8 +156,6 @@ class Chinese_string_up_puzzle(QMainWindow):
             self.module_action_pinyin.setChecked(False)
         if not enum_Puzzle_Module.Module_Multi.value & type.value:
             self.module_action_multi.setChecked(False)
-        if not enum_Puzzle_Module.Module_BattleSingle.value & type.value:
-            self.module_action_BattleSingle.setChecked(False)
 
     def _add_displayMenuBar(self):
         menu = self.menuBar()
@@ -241,23 +230,37 @@ class Chinese_string_up_puzzle(QMainWindow):
             lambda: self._on_OperateMenuBarClick(self.operate_action_auto, enumBarButton_Operate.Menu_ControlId_Work_Auto))
 
         self.operate_action_promote = QAction(
-            QIcon(progam_path + './image/work_promote.jpg'), '显示提示', self)
+            QIcon(progam_path + './image/work_promote.jpg'), '提示', self)
         self.operate_action_promote.setStatusTip('显示提示框')
         self.operate_action_promote.setCheckable(True)
         self.operate_action_promote.triggered.connect(
             lambda: self._on_OperateMenuBarClick(self.operate_action_promote, enumBarButton_Operate.Menu_ControlId_Work_Promote))
 
+        self.operate_action_battlesingle = QAction(
+            QIcon(progam_path + './image/work_battlesingle.jpg'), '单回合', self)
+        self.operate_action_battlesingle.setStatusTip('单回合模式：一问一答')
+        self.operate_action_battlesingle.setCheckable(True)
+        self.operate_action_battlesingle.triggered.connect(
+            lambda: self._on_OperateMenuBarClick(self.operate_action_battlesingle, enumBarButton_Operate.Menu_ControlId_Work_BattleSingle))
+
         file_menu = menu.addMenu('操作(&c)')
         file_menu.addAction(self.operate_action_auto)
         self._register_model(self.operate_action_auto)
+        file_menu.addAction(self.operate_action_battlesingle)
+        self._register_model(self.operate_action_battlesingle)
         file_menu.addAction(self.operate_action_promote)
 
     def _on_OperateMenuBarClick(self, btn, type):
         if self._vip_control(type, btn):
             return
-
+        
         if enumBarButton_Operate.Menu_ControlId_Work_Auto.value & type.value:
             LOG_TRACE("set auto model")
+            self.operate_action_battlesingle.setChecked(False)
+
+        if enumBarButton_Operate.Menu_ControlId_Work_BattleSingle.value & type.value:
+            LOG_TRACE("set auto model")
+            self.operate_action_auto.setChecked(False)
 
         if enumBarButton_Operate.Menu_ControlId_Work_Promote.value & type.value:
             if btn.isChecked():
@@ -378,7 +381,6 @@ class Chinese_string_up_puzzle(QMainWindow):
     # '''数据加载'''
     def _init_data(self):
         LOG_INFO('数据加载')
-        # if not self.module_action_BattleSingle.isChecked():
         self.user_input_edit.clear()
         self.user_spell_edit.clear()
         self.user_explain_edit.clear()
@@ -470,8 +472,7 @@ class Chinese_string_up_puzzle(QMainWindow):
             self.user_spell_edit.setText(spell)
             self.user_explain_edit.setText(text)
             self.idiom_used['user'].append(idiom)
-            if not self.module_action_BattleSingle.isChecked():
-                self.idiom_used['used'].append(idiom)
+            self.idiom_used['used'].append(idiom)
             self.idiom_used['all'].append(['user', idiom])
             LOG_INFO(self.display_user + idiom)
         elif enum_Idiom_Output.ENUM_IDIOM_OUTPUT_AI == type:
@@ -481,8 +482,7 @@ class Chinese_string_up_puzzle(QMainWindow):
             self.ai_spell_edit.setText(spell)
             self.ai_explain_edit.setText(text)
             self.idiom_used['ai'].append(idiom)
-            if not self.module_action_BattleSingle.isChecked():
-                self.idiom_used['used'].append(idiom)
+            self.idiom_used['used'].append(idiom)
             self.idiom_used['all'].append(['ai', idiom])
             LOG_INFO(self.display_ai + idiom)
             self.idiom_promote_list.clear()
@@ -496,7 +496,7 @@ class Chinese_string_up_puzzle(QMainWindow):
     def _check_userInputValid(self, idiom):
         results = []
         # 成语已使用
-        if idiom in self.idiom_used['used']:
+        if idiom in self.idiom_used['used'] and not self.operate_action_battlesingle.isChecked() :
             QMessageBox.warning(
                 self, '成语已使用', '你输入的成语已在本次接龙中使用, 请重新输入!', QMessageBox.StandardButton.Ok)
             return False, results
