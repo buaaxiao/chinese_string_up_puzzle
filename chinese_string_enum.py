@@ -1,5 +1,8 @@
-# const and enum def
+#!/usr/bin/env python3
+# -*- coding : utf-8-*-
+# coding:unicode_escape
 
+# const and enum def
 import enum
 
 

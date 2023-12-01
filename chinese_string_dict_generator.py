@@ -13,8 +13,10 @@ from chinese_string_up_sqlgenerator import CSqlGenerator
 from xcommon.xlog import *
 from chinese_string_enum import *
 
+
 # '''成语引擎'''
 class Chinese_string_db_generator(object):
+
     def __init__(self, data_pathfile):
         self.data_pathfile = data_pathfile
         self._init_database(data_pathfile)
@@ -96,9 +98,11 @@ class Chinese_string_db_generator(object):
                     sqlvalue = ''
                     for key in self.dict_column.keys():
                         vkey = self.dict_column[key]
-                        if vkey in self.idiom_dict_data[idiom_key][idiom].keys():
+                        if vkey in self.idiom_dict_data[idiom_key][idiom].keys(
+                        ):
                             sqlcolumn += '`' + key + '`,'
-                            sqlvalue += '\'' + self.idiom_dict_data[idiom_key][idiom][vkey] + '\','
+                            sqlvalue += '\'' + self.idiom_dict_data[idiom_key][
+                                idiom][vkey] + '\','
                     sqlcolumn = sqlcolumn.rstrip(',')
                     sqlvalue = sqlvalue.rstrip(',')
                     sqlcolumn += ',`pinyin_fst_lz`'
@@ -121,14 +125,14 @@ class Chinese_string_db_generator(object):
                     mulpinyin = pypinyin.pinyin(idiom[0], heteronym=True)[0]
                     for mpy in mulpinyin:
                         sql = "INSERT OR IGNORE INTO `" + self.multi_table_name + "` (world, pinyin) values("
-                        sql +=  "'" + idiom[0] + "',"
-                        sql +=  "'" + mpy + "'"
+                        sql += "'" + idiom[0] + "',"
+                        sql += "'" + mpy + "'"
                         sql += ')'
                         LOG_TRACE(sql)
                         self.cursor.execute(sql)
 
                 self.conn.commit()
-                
+
             return 1
         except Exception as e:
             LOG_ERROR('>> Creat Error:', e)
@@ -151,6 +155,7 @@ class Chinese_string_db_generator(object):
         self._create_table()
         self._fill_data()
 
+
 def main():
     result = []
     data_pathfile = progam_path + '/data/stringup.db'
@@ -159,8 +164,8 @@ def main():
 
     return result
 
+
 # '''run'''
 if __name__ == '__main__':
     value = main()
     LOG_INFO("返回值:", value)
-    

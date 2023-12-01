@@ -12,9 +12,13 @@ from chinese_string_up_sqlgenerator import CSqlGenerator
 from xcommon.xlog import *
 from chinese_string_enum import *
 
+
 # '''成语引擎'''
 class Chinese_string_engine(object):
-    def __init__(self, data_pathfile, default_module=enum_Puzzle_Module.Module_All):
+
+    def __init__(self,
+                 data_pathfile,
+                 default_module=enum_Puzzle_Module.Module_All):
         self.puzzle_module = default_module
         self.data_pathfile = data_pathfile
         self._init_database(data_pathfile)
@@ -53,21 +57,24 @@ class Chinese_string_engine(object):
         results = []
         rows = self.cursor.fetchall()
         if rows:
-            column_names = [description[0] for description in self.cursor.description]
+            column_names = [
+                description[0] for description in self.cursor.description
+            ]
             for row in rows:
                 result = dict(zip(column_names, row))
                 results.append(result)
-            
+
             # 输出结果
             for result in results:
                 LOG_TRACE(result)
 
         return results
-    
+
     def get_nextIdiom(self, idiom, except_dict=[], limit_flag=1):
         results = []
         promote_results = []
-        strsql = self.cSqlGenerator.gen_sql(self.puzzle_module, idiom, except_dict, limit_flag)
+        strsql = self.cSqlGenerator.gen_sql(self.puzzle_module, idiom,
+                                            except_dict, limit_flag)
 
         LOG_INFO(strsql)
         results = self._do_query_dict(strsql)
@@ -77,10 +84,11 @@ class Chinese_string_engine(object):
             promote_except_dict = except_dict
             if 0 != len(results):
                 promote_except_dict.append(results[0]['idiom'])
-                promote_results, _ = self.get_nextIdiom(results[0]['idiom'], promote_except_dict, 0)
+                promote_results, _ = self.get_nextIdiom(
+                    results[0]['idiom'], promote_except_dict, 0)
             LOG_TRACE("promote_results")
             LOG_TRACE(promote_results)
-        
+
         return results, promote_results
 
     def get_nextIdomByKey(self, idiom_key, except_dict=[]):
@@ -108,13 +116,14 @@ class Chinese_string_engine(object):
         for column in self.dict_column:
             LOG_TRACE(result[column])
             if None != result[column]:
-                text_ret += self.dict_column[column] + ':' + result[column] + '\n'
+                text_ret += self.dict_column[column] + ':' + result[
+                    column] + '\n'
 
         return text_ret.strip('\n')
 
     def get_spell(self, result):
         return result['pinyin_all']
-    
+
     def get_idiom(self, result):
         return result['idiom']
 
@@ -123,10 +132,13 @@ class Chinese_string_engine(object):
         idiom_head_pinyin = ''.join(pypinyin.pinyin(idiom)[0])
         idiom_check_tail_pinyin = ''.join(pypinyin.pinyin(idiom_check)[-1])
         LOG_TRACE(idiom_head_pinyin, idiom_check_tail_pinyin)
-        if enum_Puzzle_Module.Module_All == self.puzzle_module and (idiom[0] != idiom_check[-1] or idiom_head_pinyin != idiom_check_tail_pinyin):
+        if enum_Puzzle_Module.Module_All == self.puzzle_module and (
+                idiom[0] != idiom_check[-1]
+                or idiom_head_pinyin != idiom_check_tail_pinyin):
             return enum_Puzzle_Unmatch.Unmatch_All, "首尾字及拼音匹配失败"
 
-        if enum_Puzzle_Module.Module_Word == self.puzzle_module and idiom[0] != idiom_check[-1]:
+        if enum_Puzzle_Module.Module_Word == self.puzzle_module and idiom[
+                0] != idiom_check[-1]:
             return enum_Puzzle_Unmatch.Unmatch_Word, "首尾字匹配失败"
 
         idiom_head_lzpinyin = pypinyin.lazy_pinyin(idiom)[0]
@@ -146,7 +158,8 @@ class Chinese_string_engine(object):
 
     def get_model(self):
         return self.puzzle_module
-    
+
+
 def main():
     result = []
     data_pathfile = progam_path + '/data/stringup.db'
@@ -156,20 +169,15 @@ def main():
     except_dict = []
     LOG_INFO(engine.get_nextIdomByKey(idiom_index, except_dict))
     engine.set_model(enum_Puzzle_Module.Module_All)
-    LOG_TRACE(engine.get_nextIdiom(
-        idiom_index, except_dict))
+    LOG_TRACE(engine.get_nextIdiom(idiom_index, except_dict))
     engine.set_model(enum_Puzzle_Module.Module_Word)
-    LOG_TRACE(engine.get_nextIdiom(
-        idiom_index, except_dict))
+    LOG_TRACE(engine.get_nextIdiom(idiom_index, except_dict))
     engine.set_model(enum_Puzzle_Module.Module_LzPinyin)
-    LOG_TRACE(engine.get_nextIdiom(
-        idiom_index, except_dict))
+    LOG_TRACE(engine.get_nextIdiom(idiom_index, except_dict))
     engine.set_model(enum_Puzzle_Module.Module_Pinyin)
-    LOG_TRACE(engine.get_nextIdiom(
-        idiom_index, except_dict))
+    LOG_TRACE(engine.get_nextIdiom(idiom_index, except_dict))
     engine.set_model(enum_Puzzle_Module.Module_Multi)
-    LOG_TRACE(engine.get_nextIdiom(
-        idiom_index, except_dict))
+    LOG_TRACE(engine.get_nextIdiom(idiom_index, except_dict))
 
     idiom = "雪案萤灯"
     results = engine.get_idiom_instance(idiom)
@@ -198,8 +206,8 @@ def main():
 
     return result
 
+
 # '''run'''
 if __name__ == '__main__':
     value = main()
     LOG_INFO("返回值:", value)
-    
