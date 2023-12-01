@@ -5,6 +5,7 @@
 from PyQt6.QtGui import *
 from PyQt6.QtCore import *
 from PyQt6.QtWidgets import *
+from PyQt6.QtCore import QFile
 from xcommon.xlog import *
 from xcommon.xconfig import *
 from chinese_string_enum import *
@@ -587,5 +588,12 @@ if __name__ == '__main__':
     app = QApplication(sys.argv)
     app.setWindowIcon(QIcon(progam_path + './image/icon.png'))
     client = Chinese_string_up_puzzle()
+
+    style_file = QFile(progam_path + './qss/MacOS.qss')
+    if style_file.open(QFile.OpenModeFlag.ReadOnly | QFile.OpenModeFlag.Text):
+        LOG_INFO(style_file.fileName())
+        style_sheet = bytes(style_file.readAll()).decode()
+        client.setStyleSheet(style_sheet)
+
     client.show()
     sys.exit(app.exec())
