@@ -3,7 +3,8 @@ Copyright (c) 2023 project Chinese string up puzzle
 This project is licensed under GNU GPL version 2.0 or above 
 author: buaaxiao
 -- ------------------------------------------------------------------------- -->
-source_path: https://github.com/buaaxiao/chinese_string_up_puzzle.git 
+source_path:
+<https://gitee.com/buaaxiao/chinese_string_up_puzzle.git>
 
 <!-- 成语库生成 -->
 py chinese_string_dict_generator.py

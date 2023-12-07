@@ -376,14 +376,27 @@ class Chinese_string_up_puzzle(QMainWindow):
         self.grid.addWidget(self.user_promote_button, 0, 3, 1, 1)
         self.grid.addWidget(self.user_spell_label, 1, 0, 1, 1)
         self.grid.addWidget(self.user_spell_edit, 1, 1, 1, 3)
-        self.grid.addWidget(self.user_explain_label, 2, 0, 1, 1)
+
+        self.grid.addWidget(self.user_explain_label,
+                            2,
+                            0,
+                            1,
+                            1,
+                            alignment=Qt.AlignmentFlag.AlignTop)
         self.grid.addWidget(self.user_explain_edit, 2, 1, 1, 3)
+
         self.grid.addWidget(self.ai_input_label, 3, 0, 1, 1)
         self.grid.addWidget(self.ai_input_edit, 3, 1, 1, 2)
         self.grid.addWidget(self.restart_button, 3, 3, 1, 1)
         self.grid.addWidget(self.ai_spell_label, 4, 0, 1, 1)
         self.grid.addWidget(self.ai_spell_edit, 4, 1, 1, 3)
-        self.grid.addWidget(self.ai_explain_label, 5, 0, 1, 1)
+        self.grid.addWidget(self.ai_explain_label,
+                            5,
+                            0,
+                            1,
+                            1,
+                            alignment=Qt.AlignmentFlag.AlignTop)
+
         self.grid.addWidget(self.ai_explain_edit, 5, 1, 1, 3)
         self.grid.addWidget(self.idiom_used_list, 0, 4, 6, 1)
         self.grid.addWidget(self.idiom_promote_list, 0, 5, 6, 1)
