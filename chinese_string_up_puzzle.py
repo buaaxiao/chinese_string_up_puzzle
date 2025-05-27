@@ -128,11 +128,21 @@ class Chinese_string_up_puzzle(QMainWindow):
             self.data_filepath, default_module=enum_Puzzle_Module.Module_All
         )
 
+    @staticmethod
+    def get_icon(icon_name):
+        base_path = os.path.dirname(__file__)
+        path = os.path.join(base_path, "image", icon_name)
+        LOG_DEBUG("图标路径: %s", path)
+        if not os.path.exists(path):
+            LOG_WARNING("图标路径: %s", path)
+            return QIcon()
+        return QIcon(path)
+
     def _add_moduleMenuBar(self):
         menu = self.menuBar()
 
         self.module_action_all = QAction(
-            QIcon(XFunc.get_parent_path("./image/match_all.jpg")), "完全匹配", self
+            Chinese_string_up_puzzle.get_icon("match_all.jpg"), "完全匹配", self
         )
         self.module_action_all.setStatusTip("完全匹配：支持首尾读音和字都匹配")
         self.module_action_all.setCheckable(True)
@@ -145,7 +155,7 @@ class Chinese_string_up_puzzle(QMainWindow):
         )
 
         self.module_action_word = QAction(
-            QIcon(XFunc.get_parent_path("./image/match_word.jpg")), "字匹配", self
+            Chinese_string_up_puzzle.get_icon("match_word.jpg"), "字匹配", self
         )
         self.module_action_word.setStatusTip("字匹配：支持首尾字匹配")
         self.module_action_word.setCheckable(True)
@@ -156,7 +166,7 @@ class Chinese_string_up_puzzle(QMainWindow):
         )
 
         self.module_action_lzpinyin = QAction(
-            QIcon(XFunc.get_parent_path("./image/match_lzpinyin.jpg")),
+            Chinese_string_up_puzzle.get_icon("match_lzpinyin.jpg"),
             "读音模糊匹配",
             self,
         )
@@ -169,7 +179,9 @@ class Chinese_string_up_puzzle(QMainWindow):
         )
 
         self.module_action_pinyin = QAction(
-            QIcon(XFunc.get_parent_path("./image/match_pinyin.jpg")), "读音匹配", self
+            Chinese_string_up_puzzle.get_icon("match_pinyin.jpg"),
+            "读音匹配",
+            self,
         )
         self.module_action_pinyin.setStatusTip("读音匹配：支持首尾读音完全匹配")
         self.module_action_pinyin.setCheckable(True)
@@ -180,7 +192,9 @@ class Chinese_string_up_puzzle(QMainWindow):
         )
 
         self.module_action_multi = QAction(
-            QIcon(XFunc.get_parent_path("./image/match_multi.jpg")), "多音字匹配", self
+            Chinese_string_up_puzzle.get_icon("match_multi.jpg"),
+            "多音字匹配",
+            self,
         )
         self.module_action_multi.setStatusTip("多音字模式：支持首尾多音字匹配")
         self.module_action_multi.setCheckable(True)
@@ -227,7 +241,7 @@ class Chinese_string_up_puzzle(QMainWindow):
         menu = self.menuBar()
 
         self.display_action_all = QAction(
-            QIcon(XFunc.get_parent_path("./image/show_all.jpg")), "全部", self
+            Chinese_string_up_puzzle.get_icon("show_all.jpg"), "全部", self
         )
         self.display_action_all.setStatusTip("展示全部历史记录")
         self.display_action_all.setCheckable(True)
@@ -240,7 +254,7 @@ class Chinese_string_up_puzzle(QMainWindow):
         )
 
         self.display_action_user = QAction(
-            QIcon(XFunc.get_parent_path("./image/show_user.jpg")), "我方", self
+            Chinese_string_up_puzzle.get_icon("show_user.jpg"), "我方", self
         )
         self.display_action_user.setStatusTip("展示我方历史记录")
         self.display_action_user.setCheckable(True)
@@ -251,7 +265,7 @@ class Chinese_string_up_puzzle(QMainWindow):
         )
 
         self.display_action_ai = QAction(
-            QIcon(XFunc.get_parent_path("./image/show_ai.jpg")), "电脑", self
+            Chinese_string_up_puzzle.get_icon("show_ai.jpg"), "电脑", self
         )
         self.display_action_ai.setStatusTip("展示电脑历史记录")
         self.display_action_ai.setCheckable(True)
@@ -301,7 +315,7 @@ class Chinese_string_up_puzzle(QMainWindow):
         menu = self.menuBar()
 
         self.operate_action_auto = QAction(
-            QIcon(XFunc.get_parent_path("./image/work_auto.jpg")), "自动接龙", self
+            Chinese_string_up_puzzle.get_icon("work_auto.jpg"), "自动接龙", self
         )
         self.operate_action_auto.setStatusTip(
             "自动接龙：人工发起，电脑自动接龙并显示结果"
@@ -314,7 +328,7 @@ class Chinese_string_up_puzzle(QMainWindow):
         )
 
         self.operate_action_promote = QAction(
-            QIcon(XFunc.get_parent_path("./image/work_promote.jpg")), "提示", self
+            Chinese_string_up_puzzle.get_icon("work_promote.jpg"), "提示", self
         )
         self.operate_action_promote.setStatusTip("显示提示框")
         self.operate_action_promote.setCheckable(True)
@@ -326,7 +340,7 @@ class Chinese_string_up_puzzle(QMainWindow):
         )
 
         self.operate_action_battlesingle = QAction(
-            QIcon(XFunc.get_parent_path("./image/work_battlesingle.jpg")),
+            Chinese_string_up_puzzle.get_icon("work_battlesingle.jpg"),
             "单回合",
             self,
         )

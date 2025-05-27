@@ -12,4 +12,4 @@ pip3 install PyQt6
 pip3 install pyinstaller
 
 mac pack:
-pip3 install Pillow && rm -rvf build dist logs && find ./ -name '__pycache__'|xargs rm -rvf && pyinstaller -n ChineseStringUpPuzzle -i image/icon.png --windowed --clean --noconfirm --noconsole --add-data ./data:data --add-data ./image:image chinese_string_up_puzzle.py && pyinstaller --clean --noconfirm ChineseStringUpPuzzle.spec
+pip3 install Pillow && py xutil/xtest.py clean && pyinstaller -n ChineseStringUpPuzzle -i image/icon.png --windowed --clean --noconfirm --noconsole --add-data ./data:data --add-data ./image:image chinese_string_up_puzzle.py && pyinstaller --clean --noconfirm ChineseStringUpPuzzle.spec
