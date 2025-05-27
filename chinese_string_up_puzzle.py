@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 # -*- coding : utf-8-*-
-# coding:unicode_escape
 
 from PyQt6.QtGui import *
 from PyQt6.QtCore import *
@@ -8,8 +7,10 @@ from PyQt6.QtWidgets import *
 from PyQt6.QtCore import QFile
 from xcommon.xlog import *
 from xcommon.xconfig import *
-from chinese_string_enum import *
-from chinese_string_engine import *
+from xcommon.xconfig import *
+from xutil.csup_enum import *
+from xutil.csup_engine import *
+from xutil.csup_def import XCSUDef
 
 FINISH_TAIL = "-------结束-------"
 PROMOTE_TAIL = "-------无提示-------"
@@ -19,7 +20,6 @@ PROMOTE_TAIL = "-------无提示-------"
 class Chinese_string_up_puzzle(QMainWindow):
 
     def _vip_control(self, control_id, btn=None):
-        LOG_TRACE(control_id, btn)
         continue_dict = {
             enum_Puzzle_Module.Module_Word: "word",
             enum_Puzzle_Module.Module_LzPinyin: "lzpinyin",
@@ -31,11 +31,21 @@ class Chinese_string_up_puzzle(QMainWindow):
         }
 
         if control_id in continue_dict.keys():
-            config_value = self.cConfigHandle.get_value_int(
-                "function", continue_dict[control_id], 0
+            LOG_DEBUG(
+                "control_id type: %s, value type: %s",
+                type(control_id),
+                type(continue_dict[control_id]),
             )
-            LOG_TRACE("config_value:", config_value)
-            if 1 != config_value:
+            LOG_DEBUG(control_id)
+            LOG_DEBUG(continue_dict[control_id])
+
+            control_key = continue_dict[control_id]
+            config_value = self.config_parser.get_value(
+                "function",
+                continue_dict[control_id],
+            )
+            LOG_DEBUG("config_value: %s", config_value)
+            if str(config_value) != "1":
                 QMessageBox.information(
                     self,
                     "Very Important Person",
@@ -50,13 +60,7 @@ class Chinese_string_up_puzzle(QMainWindow):
 
     # 初始化
     def __init__(self, parent=None, **kwargs):
-        LOG_INFO("---------------------------开始接龙---------------------------")
         super(Chinese_string_up_puzzle, self).__init__(parent)
-
-        self.data_filepath = progam_path + "./data/stringup.db"
-        self.Chinese_string_engine = Chinese_string_engine(
-            self.data_filepath, default_module=enum_Puzzle_Module.Module_All
-        )
 
         # 模态注册
         self._init_model()
@@ -74,6 +78,7 @@ class Chinese_string_up_puzzle(QMainWindow):
         self._init_timer()
         # 读取数据
         self._init_data()
+        LOG_INFO("---------------------------开始接龙---------------------------")
 
     def _init_model(self):
         self.Module_set = []
@@ -86,23 +91,48 @@ class Chinese_string_up_puzzle(QMainWindow):
             btn.setDisabled(bModel)
 
     def _init_config(self):
-        self.cConfigHandle = xConfigHandle(cfg_path)
-        self.display_user = (
-            "【"
-            + self.cConfigHandle.get_value_str("common", "his_dispaly_user", "我方")
-            + "】"
+        self.config_file = XFunc.get_parent_path("./config/config.xml")
+        self.config_parser = XConfigParser(self.config_file)
+
+        common_cfgs = self.config_parser.get_config_data(
+            section="common",
+            config_class=self.config_parser.create_config_class(
+                "CommonConfig", XCSUDef.common_def
+            ),
         )
-        self.display_ai = (
-            "【"
-            + self.cConfigHandle.get_value_str("common", "his_dispaly_ai", "电脑")
-            + "】"
+        self.common_cfg = (
+            common_cfgs.get("common", [{}])[0]  # Get first config or empty dict
+            if common_cfgs and isinstance(common_cfgs, dict)
+            else {}
+        )
+        print(self.common_cfg)
+
+        function_cfgs = self.config_parser.get_config_data(
+            section="function",
+            config_class=self.config_parser.create_config_class(
+                "FunctionConfig", XCSUDef.function_def
+            ),
+        )
+        self.function_cfg = (
+            function_cfgs.get("function", [{}])[0]  # Get first config or empty dict
+            if function_cfgs and isinstance(function_cfgs, dict)
+            else {}
+        )
+        print(self.function_cfg)
+
+        self.display_user = "【" + self.common_cfg.his_dispaly_user + "】"
+        self.display_ai = "【" + self.common_cfg.his_dispaly_ai + "】"
+
+        self.data_filepath = XFunc.get_parent_path("./data/stringup.db")
+        self.Chinese_string_engine = Chinese_string_engine(
+            self.data_filepath, default_module=enum_Puzzle_Module.Module_All
         )
 
     def _add_moduleMenuBar(self):
         menu = self.menuBar()
 
         self.module_action_all = QAction(
-            QIcon(progam_path + "./image/match_all.jpg"), "完全匹配", self
+            QIcon(XFunc.get_parent_path("./image/match_all.jpg")), "完全匹配", self
         )
         self.module_action_all.setStatusTip("完全匹配：支持首尾读音和字都匹配")
         self.module_action_all.setCheckable(True)
@@ -115,7 +145,7 @@ class Chinese_string_up_puzzle(QMainWindow):
         )
 
         self.module_action_word = QAction(
-            QIcon(progam_path + "./image/match_word.jpg"), "字匹配", self
+            QIcon(XFunc.get_parent_path("./image/match_word.jpg")), "字匹配", self
         )
         self.module_action_word.setStatusTip("字匹配：支持首尾字匹配")
         self.module_action_word.setCheckable(True)
@@ -126,7 +156,9 @@ class Chinese_string_up_puzzle(QMainWindow):
         )
 
         self.module_action_lzpinyin = QAction(
-            QIcon(progam_path + "./image/match_lzpinyin.jpg"), "读音模糊匹配", self
+            QIcon(XFunc.get_parent_path("./image/match_lzpinyin.jpg")),
+            "读音模糊匹配",
+            self,
         )
         self.module_action_lzpinyin.setStatusTip("读音模糊匹配：支持首尾读音模糊匹配")
         self.module_action_lzpinyin.setCheckable(True)
@@ -137,7 +169,7 @@ class Chinese_string_up_puzzle(QMainWindow):
         )
 
         self.module_action_pinyin = QAction(
-            QIcon(progam_path + "./image/match_pinyin.jpg"), "读音匹配", self
+            QIcon(XFunc.get_parent_path("./image/match_pinyin.jpg")), "读音匹配", self
         )
         self.module_action_pinyin.setStatusTip("读音匹配：支持首尾读音完全匹配")
         self.module_action_pinyin.setCheckable(True)
@@ -148,7 +180,7 @@ class Chinese_string_up_puzzle(QMainWindow):
         )
 
         self.module_action_multi = QAction(
-            QIcon(progam_path + "./image/match_multi.jpg"), "多音字匹配", self
+            QIcon(XFunc.get_parent_path("./image/match_multi.jpg")), "多音字匹配", self
         )
         self.module_action_multi.setStatusTip("多音字模式：支持首尾多音字匹配")
         self.module_action_multi.setCheckable(True)
@@ -195,7 +227,7 @@ class Chinese_string_up_puzzle(QMainWindow):
         menu = self.menuBar()
 
         self.display_action_all = QAction(
-            QIcon(progam_path + "./image/show_all.jpg"), "全部", self
+            QIcon(XFunc.get_parent_path("./image/show_all.jpg")), "全部", self
         )
         self.display_action_all.setStatusTip("展示全部历史记录")
         self.display_action_all.setCheckable(True)
@@ -208,7 +240,7 @@ class Chinese_string_up_puzzle(QMainWindow):
         )
 
         self.display_action_user = QAction(
-            QIcon(progam_path + "./image/show_user.jpg"), "我方", self
+            QIcon(XFunc.get_parent_path("./image/show_user.jpg")), "我方", self
         )
         self.display_action_user.setStatusTip("展示我方历史记录")
         self.display_action_user.setCheckable(True)
@@ -219,7 +251,7 @@ class Chinese_string_up_puzzle(QMainWindow):
         )
 
         self.display_action_ai = QAction(
-            QIcon(progam_path + "./image/show_ai.jpg"), "电脑", self
+            QIcon(XFunc.get_parent_path("./image/show_ai.jpg")), "电脑", self
         )
         self.display_action_ai.setStatusTip("展示电脑历史记录")
         self.display_action_ai.setCheckable(True)
@@ -242,7 +274,7 @@ class Chinese_string_up_puzzle(QMainWindow):
             btn.setChecked(True)
             return
 
-        LOG_TRACE(type)
+        LOG_DEBUG(type)
         self.idiom_used_list.clear()
         if not enumBarButton_Display.Menu_ControlId_All.value & type.value:
             self.display_action_all.setChecked(False)
@@ -269,7 +301,7 @@ class Chinese_string_up_puzzle(QMainWindow):
         menu = self.menuBar()
 
         self.operate_action_auto = QAction(
-            QIcon(progam_path + "./image/work_auto.jpg"), "自动接龙", self
+            QIcon(XFunc.get_parent_path("./image/work_auto.jpg")), "自动接龙", self
         )
         self.operate_action_auto.setStatusTip(
             "自动接龙：人工发起，电脑自动接龙并显示结果"
@@ -282,7 +314,7 @@ class Chinese_string_up_puzzle(QMainWindow):
         )
 
         self.operate_action_promote = QAction(
-            QIcon(progam_path + "./image/work_promote.jpg"), "提示", self
+            QIcon(XFunc.get_parent_path("./image/work_promote.jpg")), "提示", self
         )
         self.operate_action_promote.setStatusTip("显示提示框")
         self.operate_action_promote.setCheckable(True)
@@ -294,7 +326,9 @@ class Chinese_string_up_puzzle(QMainWindow):
         )
 
         self.operate_action_battlesingle = QAction(
-            QIcon(progam_path + "./image/work_battlesingle.jpg"), "单回合", self
+            QIcon(XFunc.get_parent_path("./image/work_battlesingle.jpg")),
+            "单回合",
+            self,
         )
         self.operate_action_battlesingle.setStatusTip("单回合模式：一问一答")
         self.operate_action_battlesingle.setCheckable(True)
@@ -317,11 +351,11 @@ class Chinese_string_up_puzzle(QMainWindow):
             return
 
         if enumBarButton_Operate.Menu_ControlId_Work_Auto.value & type.value:
-            LOG_TRACE("set auto model")
+            LOG_DEBUG("set auto model")
             self.operate_action_battlesingle.setChecked(False)
 
         if enumBarButton_Operate.Menu_ControlId_Work_BattleSingle.value & type.value:
-            LOG_TRACE("set auto model")
+            LOG_DEBUG("set auto model")
             self.operate_action_auto.setChecked(False)
 
         if enumBarButton_Operate.Menu_ControlId_Work_Promote.value & type.value:
@@ -341,11 +375,9 @@ class Chinese_string_up_puzzle(QMainWindow):
                         self.idiom_promote_list.addItem(ele["idiom"])
 
     def _init_widget(self):
-        self.setWindowTitle(
-            self.cConfigHandle.get_value_str("common", "progam_title", "成语接龙")
-        )
+        self.setWindowTitle(self.common_cfg.progam_title)
 
-        if 1 == self.cConfigHandle.get_value_int("common", "progam_size_fix", 0):
+        if 1 == self.common_cfg.progam_size_fix:
             self.setFixedSize(985, 609)
         else:
             self.setSizePolicy(
@@ -500,8 +532,8 @@ class Chinese_string_up_puzzle(QMainWindow):
                 self.idiom, self.idiom_used["used"]
             )
         )
-        LOG_TRACE(self.ai_results)
-        LOG_TRACE("self.answer_idiom_dict_promote")
+        LOG_DEBUG(self.ai_results)
+        LOG_DEBUG("self.answer_idiom_dict_promote")
         LOG_INFO(self.answer_idiom_dict_promote)
         if 0 == len(self.ai_results):
             self._congratulation(self.idiom)
@@ -520,10 +552,7 @@ class Chinese_string_up_puzzle(QMainWindow):
                 self._insertOutput(FINISH_TAIL)
                 LOG_INFO(FINISH_TAIL)
             else:
-                self.auto_timer.start(
-                    self.cConfigHandle.get_value_int("common", "auto_timer_interval", 1)
-                    * 1000
-                )
+                self.auto_timer.start(int(self.common_cfg.auto_timer_interval * 1000))
                 self._do_model(True)
                 self.user_input_button.setText("停止")
 
@@ -543,7 +572,7 @@ class Chinese_string_up_puzzle(QMainWindow):
             self.user_input_button.clicked.emit()
 
     def _set_output(self, result, type, answer_idiom_dict_promote=[]):
-        LOG_TRACE(result)
+        LOG_DEBUG(result)
         idiom = self.Chinese_string_engine.get_idiom(result)
         spell = self.Chinese_string_engine.get_spell(result)
         text = self.Chinese_string_engine.get_answerText(result)
@@ -660,10 +689,10 @@ class Chinese_string_up_puzzle(QMainWindow):
 # '''run'''˝
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    app.setWindowIcon(QIcon(progam_path + "./image/icon.png"))
+    app.setWindowIcon(QIcon(XFunc.get_parent_path("./image/icon.png")))
     client = Chinese_string_up_puzzle()
 
-    style_file = QFile(progam_path + "./qss/MacOS.qss")
+    style_file = QFile(XFunc.get_parent_path("./qss/MacOS.qss"))
     if style_file.open(QFile.OpenModeFlag.ReadOnly | QFile.OpenModeFlag.Text):
         LOG_INFO(style_file.fileName())
         style_sheet = bytes(style_file.readAll()).decode()

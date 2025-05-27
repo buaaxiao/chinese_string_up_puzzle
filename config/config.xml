@@ -5,8 +5,15 @@
         <his_dispaly_ai>电脑</his_dispaly_ai>
         <progam_title>成语接龙</progam_title>
         <progam_size_fix>0</progam_size_fix>
-        <auto_timer_interval>1</auto_timer_interval>
+        <auto_timer_interval>0.01</auto_timer_interval>
     </common>
+    <log>
+        <path>$OPEN_SOURCE/chinese_string_up_puzzle/log</path>
+        <size>10</size>
+        <num>5</num>
+        <console_level>DEBUG</console_level>
+        <file_level>DEBUG</file_level>
+    </log>
     <function>
         <word>1</word>
         <lzpinyin>1</lzpinyin>
@@ -16,12 +23,4 @@
         <auto>1</auto>
         <promote>1</promote>
     </function>
-    <log>
-        <level>info</level>
-        <path>./logs</path>
-        <size>0</size>
-        <num>2</num>
-        <out_put_to_file>1</out_put_to_file>
-        <out_put_to_terminate>1</out_put_to_terminate>
-    </log>
 </root>

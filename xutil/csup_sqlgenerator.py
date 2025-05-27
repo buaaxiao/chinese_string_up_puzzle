@@ -1,10 +1,18 @@
 #!/usr/bin/env python3
 # -*- coding : utf-8-*-
-# coding:unicode_escape
 
 import pypinyin
-from chinese_string_enum import enum_Puzzle_Module
+import os
+import sys
+
+# Get the absolute path of the current file
+current_dir = os.path.dirname(os.path.abspath(__file__))
+# Add the deploy directory to sys.path
+sys.path.extend([current_dir, os.path.dirname(current_dir)])
+
 from xcommon.xlog import *
+from xcommon.xconfig import *
+from xutil.csup_enum import enum_Puzzle_Module
 
 
 class CSqlGenerator:
@@ -30,7 +38,7 @@ class CSqlGenerator:
             + "'"
         )
         if 0 != len(except_dict):
-            LOG_TRACE(except_dict)
+            LOG_DEBUG(except_dict)
             strsql += " and idiom not in('" + "','".join(except_dict) + "')"
         strsql += " limit 1"
         return strsql
@@ -51,7 +59,7 @@ class CSqlGenerator:
             strsql = self.functions[module](*args, **kwargs)
 
             if 0 != len(except_dict):
-                LOG_TRACE(except_dict)
+                LOG_DEBUG(except_dict)
                 strsql += " and a.idiom not in('" + "','".join(except_dict) + "')"
             if 1 == limit_flag:
                 strsql += " order by random() limit 1"

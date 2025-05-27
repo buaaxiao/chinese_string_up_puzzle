@@ -1,16 +1,22 @@
 #!/usr/bin/env python3
 # -*- coding : utf-8-*-
-# coding:unicode_escape
 
 import pypinyin
 import sqlite3
 import atexit
-from PyQt6.QtGui import *
-from PyQt6.QtCore import *
-from PyQt6.QtWidgets import *
-from chinese_string_up_sqlgenerator import CSqlGenerator
+import os
+import sys
+
+# Get the absolute path of the current file
+current_dir = os.path.dirname(os.path.abspath(__file__))
+# Add the deploy directory to sys.path
+sys.path.extend([current_dir, os.path.dirname(current_dir)])
+
 from xcommon.xlog import *
-from chinese_string_enum import *
+from xcommon.xconfig import *
+from xcommon.xfunc import *
+from xutil.csup_sqlgenerator import CSqlGenerator
+from xutil.csup_enum import *
 
 
 # '''成语引擎'''
@@ -26,7 +32,7 @@ class Chinese_string_engine(object):
         atexit.register(self.exit_handler)
 
     def exit_handler(self):
-        LOG_TRACE("Exiting program")
+        LOG_DEBUG("Exiting program")
         self.cursor.close()
         self.conn.close()
 
@@ -34,7 +40,7 @@ class Chinese_string_engine(object):
         self.puzzle_module = puzzle_module
 
     def _init_database(self, db_path):
-        LOG_TRACE("_init_database:" + db_path)
+        LOG_DEBUG("_init_database:" + db_path)
         self.conn = sqlite3.connect(db_path)
         self.cursor = self.conn.cursor()
 
@@ -49,7 +55,7 @@ class Chinese_string_engine(object):
         self.dict_column["fanti"] = "繁体"
 
     def _do_query_dict(self, strsql):
-        LOG_TRACE("do_query_dict:" + strsql)
+        LOG_DEBUG("do_query_dict:" + strsql)
         self.cursor.execute(strsql)
 
         results = []
@@ -62,7 +68,7 @@ class Chinese_string_engine(object):
 
             # 输出结果
             for result in results:
-                LOG_TRACE(result)
+                LOG_DEBUG(result)
 
         return results
 
@@ -75,7 +81,7 @@ class Chinese_string_engine(object):
 
         LOG_INFO(strsql)
         results = self._do_query_dict(strsql)
-        LOG_TRACE(results)
+        LOG_DEBUG(results)
 
         if 1 == limit_flag:
             promote_except_dict = except_dict
@@ -84,8 +90,8 @@ class Chinese_string_engine(object):
                 promote_results, _ = self.get_nextIdiom(
                     results[0]["idiom"], promote_except_dict, 0
                 )
-            LOG_TRACE("promote_results")
-            LOG_TRACE(promote_results)
+            LOG_DEBUG("promote_results")
+            LOG_DEBUG(promote_results)
 
         return results, promote_results
 
@@ -95,7 +101,7 @@ class Chinese_string_engine(object):
         idiom_key = idiom_key + "%"
         strsql = self.cSqlGenerator.gen_nextsql(idiom_key, except_dict)
         results = self._do_query_dict(strsql)
-        LOG_TRACE(results)
+        LOG_DEBUG(results)
         return results
 
     def get_idiom_instance(self, idiom):
@@ -104,15 +110,15 @@ class Chinese_string_engine(object):
             return None
         strsql = self.cSqlGenerator.gen_nextsql(idiom_key)
         results = self._do_query_dict(strsql)
-        LOG_TRACE(results)
+        LOG_DEBUG(results)
         return results
 
     def get_answerText(self, result):
-        LOG_TRACE(self.dict_column)
+        LOG_DEBUG(self.dict_column)
 
         text_ret = ""
         for column in self.dict_column:
-            LOG_TRACE(result[column])
+            LOG_DEBUG(result[column])
             if None != result[column]:
                 text_ret += self.dict_column[column] + ":" + result[column] + "\n"
 
@@ -125,10 +131,10 @@ class Chinese_string_engine(object):
         return result["idiom"]
 
     def check_idiom(self, idiom, idiom_check):
-        LOG_TRACE(idiom, idiom_check)
+        LOG_DEBUG(idiom, idiom_check)
         idiom_head_pinyin = "".join(pypinyin.pinyin(idiom)[0])
         idiom_check_tail_pinyin = "".join(pypinyin.pinyin(idiom_check)[-1])
-        LOG_TRACE(idiom_head_pinyin, idiom_check_tail_pinyin)
+        LOG_DEBUG(idiom_head_pinyin, idiom_check_tail_pinyin)
         if enum_Puzzle_Module.Module_All == self.puzzle_module and (
             idiom[0] != idiom_check[-1] or idiom_head_pinyin != idiom_check_tail_pinyin
         ):
@@ -142,7 +148,7 @@ class Chinese_string_engine(object):
 
         idiom_head_lzpinyin = pypinyin.lazy_pinyin(idiom)[0]
         idiom_check_tail_lzpinyin = pypinyin.lazy_pinyin(idiom_check)[-1]
-        LOG_TRACE(idiom_head_lzpinyin, idiom_check_tail_lzpinyin)
+        LOG_DEBUG(idiom_head_lzpinyin, idiom_check_tail_lzpinyin)
         if (
             enum_Puzzle_Module.Module_LzPinyin == self.puzzle_module
             and idiom_head_lzpinyin != idiom_check_tail_lzpinyin
@@ -170,22 +176,22 @@ class Chinese_string_engine(object):
 
 def main():
     result = []
-    data_pathfile = progam_path + "/data/stringup.db"
+    data_pathfile = XFunc.get_parent_path(__file__) + "./data/stringup.db"
     engine = Chinese_string_engine(data_pathfile)
 
     idiom_index = "白雪"
     except_dict = []
     LOG_INFO(engine.get_nextIdomByKey(idiom_index, except_dict))
     engine.set_model(enum_Puzzle_Module.Module_All)
-    LOG_TRACE(engine.get_nextIdiom(idiom_index, except_dict))
+    LOG_DEBUG(engine.get_nextIdiom(idiom_index, except_dict))
     engine.set_model(enum_Puzzle_Module.Module_Word)
-    LOG_TRACE(engine.get_nextIdiom(idiom_index, except_dict))
+    LOG_DEBUG(engine.get_nextIdiom(idiom_index, except_dict))
     engine.set_model(enum_Puzzle_Module.Module_LzPinyin)
-    LOG_TRACE(engine.get_nextIdiom(idiom_index, except_dict))
+    LOG_DEBUG(engine.get_nextIdiom(idiom_index, except_dict))
     engine.set_model(enum_Puzzle_Module.Module_Pinyin)
-    LOG_TRACE(engine.get_nextIdiom(idiom_index, except_dict))
+    LOG_DEBUG(engine.get_nextIdiom(idiom_index, except_dict))
     engine.set_model(enum_Puzzle_Module.Module_Multi)
-    LOG_TRACE(engine.get_nextIdiom(idiom_index, except_dict))
+    LOG_DEBUG(engine.get_nextIdiom(idiom_index, except_dict))
 
     idiom = "雪案萤灯"
     results = engine.get_idiom_instance(idiom)
@@ -205,12 +211,12 @@ def main():
     }
 
     for control_id in continue_dict:
-        LOG_TRACE(type(control_id), type(continue_dict[control_id]))
-        LOG_TRACE(control_id, continue_dict[control_id])
+        LOG_DEBUG(type(control_id), type(continue_dict[control_id]))
+        LOG_DEBUG(control_id, continue_dict[control_id])
 
-    LOG_TRACE(pypinyin.pinyin("奥", heteronym=True)[0])
-    LOG_TRACE(pypinyin.pinyin("奥", heteronym=False)[0])
-    LOG_TRACE(pypinyin.lazy_pinyin("奥")[0])
+    LOG_DEBUG(pypinyin.pinyin("奥", heteronym=True)[0])
+    LOG_DEBUG(pypinyin.pinyin("奥", heteronym=False)[0])
+    LOG_DEBUG(pypinyin.lazy_pinyin("奥")[0])
 
     return result
 
