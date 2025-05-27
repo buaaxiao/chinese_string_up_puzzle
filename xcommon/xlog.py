@@ -29,7 +29,7 @@ class XLogger(object):
     log_config_def = [
         ("path", True, None, str),
         ("size", False, 10, int),
-        ("num", False, 2, int),
+        ("num", False, 0, int),
         ("console_level", False, "WARNING", str),
         ("file_level", False, "DEBUG", str),
         ("file_name", False, "test", str),
@@ -149,7 +149,8 @@ class XLogger(object):
             },
         )
 
-        self._cleanup_old_logs()
+        if 0 != self.log_num:
+            self._cleanup_old_logs()
 
     def init_log_from_file(self, config_file, user_class=None, log_format=None):
         from xconfig import XConfigParser
