@@ -11,7 +11,7 @@
         <path>$OPEN_SOURCE/chinese_string_up_puzzle/log</path>
         <size>10</size>
         <num>5</num>
-        <console_level>DEBUG</console_level>
+        <console_level>WARNING</console_level>
         <file_level>DEBUG</file_level>
     </log>
     <function>

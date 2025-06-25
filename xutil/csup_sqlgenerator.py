@@ -53,7 +53,13 @@ class CSqlGenerator:
         self.lzpinyin = pypinyin.lazy_pinyin(idiom)[-1]
         self.mulpinyin = pypinyin.pinyin(idiom[-1], heteronym=True)[0]
 
-        LOG_INFO(self.pinyin, self.lzpinyin, self.mulpinyin)
+        LOG_INFO(
+            "pinyin: {}, lzpinyin: {}, mulpinyin: {}".format(
+                self.pinyin,
+                self.lzpinyin,
+                self.mulpinyin,
+            )
+        )
 
         if module in self.functions:
             strsql = self.functions[module](*args, **kwargs)

@@ -5,6 +5,7 @@
 # -date:2025-03-18                          #
 #############################################
 
+import argparse
 import os
 import sys
 import logging
@@ -19,18 +20,7 @@ current_dir = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(current_dir)
 sys.path.append(os.path.dirname(current_dir))
 
-from xfunc import XFunc
-
-# Python 2/3 compatibility
-PY2 = sys.version_info[0] == 2
-if PY2:
-    from io import open
-
-    text_type = unicode  # type: ignore
-    binary_type = str
-else:
-    text_type = str
-    binary_type = bytes
+from xfunc import *
 
 
 # Global logger instance
@@ -39,7 +29,7 @@ from xlog import XLogger
 logger = XLogger()
 
 
-# Helper functions (Python 2/3 compatible)
+# Helper functions
 def LOG_DEBUG(message, *args):
     logger.debug(message, *args)
 
@@ -61,7 +51,7 @@ def LOG_CRITICAL(message, *args):
 
 
 class XConfigParser(object):
-    """Enhanced XML configuration parser with Python 2/3 compatibility."""
+    """Enhanced XML configuration parser"""
 
     def __init__(self, xml_file, encoding="utf-8"):
         """
@@ -77,7 +67,7 @@ class XConfigParser(object):
         self.root = None
 
         # Define XML framework with proper encoding
-        self.BASE_FRAMEWORK = text_type(
+        self.BASE_FRAMEWORK = str(
             """<?xml version='1.0' encoding='{enc}'?>
 <root>
     <!-- Configuration entries will be added here -->
@@ -128,10 +118,8 @@ class XConfigParser(object):
         """Load existing XML config file with version-specific parsing."""
         logging.debug("Loading existing XML file: %s", self.xml_file)
 
-        # Python 2/3 compatible parsing
         with open(self.xml_file, "rb") as f:
             if PY2:
-                # Python 2 needs special handling for encoding
                 parser = ET.XMLParser(encoding=self.encoding)
                 self.tree = ET.parse(f, parser=parser)
             else:
@@ -148,7 +136,6 @@ class XConfigParser(object):
         """Create new XML config file with directory creation."""
         logging.info("Creating new XML config file: %s", self.xml_file)
 
-        # Ensure directory exists (Python 2/3 compatible)
         try:
             os.makedirs(os.path.dirname(self.xml_file))
         except OSError:
@@ -159,7 +146,6 @@ class XConfigParser(object):
         self.root = ET.fromstring(self.BASE_FRAMEWORK)
         self.tree = ET.ElementTree(self.root)
 
-        # Python 2/3 compatible file writing
         with open(self.xml_file, "wb") as f:
             if PY2:
                 f.write(self.BASE_FRAMEWORK.encode(self.encoding))
@@ -384,8 +370,8 @@ class XConfigParser(object):
             return fallback
 
     def _convert_bool(self, value):
-        """Convert string to boolean (Python 2/3 compatible)."""
-        if isinstance(value, text_type):
+        """Convert string to boolean."""
+        if isinstance(value, str):
             value = value.lower()
         return value in ("true", "1", "yes", "on")
 
@@ -428,7 +414,7 @@ class XConfigParser(object):
 
     def create_config_class(self, class_name, field_definitions):
         """
-        Factory for creating configuration classes with Python 2/3 compatibility.
+        Factory for creating configuration classes.
 
         Args:
             class_name (str): Name of the configuration class
@@ -448,18 +434,18 @@ class XConfigParser(object):
                     name, req, default, ftype = field_def
                 elif len(field_def) == 3:  # (name, required, default)
                     name, req, default = field_def
-                    ftype = text_type
+                    ftype = str
                 elif len(field_def) == 2:  # (name, required)
                     name, req = field_def
                     default = None
-                    ftype = text_type
+                    ftype = str
                 else:
                     raise ValueError("Invalid field definition format")
             else:  # Just field name
                 name = field_def
                 req = False
                 default = None
-                ftype = text_type
+                ftype = str
 
             processed_fields.append(name)
             if req:
@@ -468,12 +454,12 @@ class XConfigParser(object):
                 field_metadata["defaults"][name] = default
             field_metadata["types"][name] = ftype
 
-        # Create base namedtuple (Python 2/3 compatible)
+        # Create base namedtuple
         BaseClass = namedtuple("_" + class_name + "Base", processed_fields)
 
         # Create actual config class
         class ConfigClass(BaseClass):
-            """Configuration class with enhanced metadata (Python 2/3 compatible)."""
+            """Configuration class with enhanced metadata."""
 
             __slots__ = ()  # For memory efficiency in both versions
 
@@ -493,7 +479,7 @@ class XConfigParser(object):
 
             @classmethod
             def get_field_type(cls, field):
-                return cls._types.get(field, text_type)
+                return cls._types.get(field, str)
 
             def __new__(cls, **kwargs):
                 # Apply defaults
@@ -529,7 +515,7 @@ class XConfigParser(object):
         ConfigClass.__name__ = str(class_name)
         return ConfigClass
 
-    # Additional utility methods with Python 2/3 compatibility
+    # Additional utility methods
     def add_section(self, section, domain=None):
         """Add a new section to the configuration."""
         if self.root is None:
@@ -648,7 +634,13 @@ class XConfigParser(object):
                     except Exception as e:
                         logging.error("Failed to create config object: %s", e)
 
-        return dict(result_dict)
+        if domain == "all":
+            logging.debug("Returning all configs:{}".format(result_dict))
+            return dict(result_dict)
+        else:
+            return (
+                {domain: result_dict.get(domain, [])} if domain in result_dict else {}
+            )
 
     def print_config(self, result_dict):
         for domain, hosts_list in result_dict.items():
@@ -691,7 +683,7 @@ class XConfigParser(object):
                     config_data[field] = text_value
             else:
                 # Use config_class field type for conversion
-                field_type = config_class._types.get(field, text_type)
+                field_type = config_class._types.get(field, str)
                 try:
                     # Special handling for boolean values
                     config_data[field] = (
@@ -722,7 +714,7 @@ class XConfigParser(object):
         match_field="name",
     ):
         """
-        Set configuration data in the XML structure (Python 2/3 compatible)
+        Set configuration data in the XML structure
 
         Args:
             section: Parent section to modify
@@ -920,85 +912,125 @@ def main():
     # Configure logging
     XFunc.init_log()
 
-    # Initialize config parser
-    config_parser = XConfigParser(XFunc.get_parent_path("config/config.xml"))
+    parser = argparse.ArgumentParser(
+        description="Deploy function",
+        usage="""
+  # Show this help message
+  python {0} -h/--help
 
-    # Define configuration with types and defaults
-    global_def = [
-        ("name", True, None, str),  # name, Required, default="", type=str
-        ("lang", False, 1, int),  # name, Required, default=1, type=int
-    ]
-    # Create config class
-    GlobalConfig = config_parser.create_config_class("global", global_def)
-    # Create config
-    global_config_new = GlobalConfig(name="test")
-    global_config_new = global_config_new._replace(lang=1)
-    # Set config data
-    config_parser.set_config_data(
-        section="global",
-        config_data=global_config_new,
-        create_missing=True,
+  # Pack and deploy test
+  python {0} --test 1
+  python {0}
+""".format(
+            sys.argv[0]
+        ),
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
-    config_parser.set_value(section="global", key="timeout", value=5)
-    # Get config
-    global_config = config_parser.get_config_data(
-        section="global",
-        config_class=GlobalConfig,
+    parser.add_argument(
+        "--test",
+        "-t",
+        type=int,
+        default=0,
+        help="test flag",
     )
-    config_parser.print_config(global_config)
+    parser.add_argument(
+        "-v",
+        "--verbose",
+        action="store_true",
+        help="Enable verbose output",
+    )
 
-    # Define configuration with types and defaults
-    server_def = [
-        ("name", True, None, str),  # name, Required, default="", type=str
-        ("host", True, None, str),  # name, Required, default="", type=str
-        ("port", False, 22, int),  # name, Required, default=22, type=int
-        ("user", True, None, str),  # name, Required, default="", type=str
-        ("password", True, None, str),  # name, Required, default="", type=str
-        ("serveraliveinterval", False, 30, int),  # name, Optional, default=30, type=int
-    ]
-    # Create config class
-    ServerConfig = config_parser.create_config_class(
-        "ServerConfig",
-        server_def,
-    )
-    # Create config
-    config = ServerConfig(
-        name="name_1", host="host_", user="user_", password="password_"
-    )
-    # Set config data
-    config_parser.set_config_data(
-        section="servers",
-        config_data=config,
-        domain="test",
-        subtag="server",
-        create_missing=True,
-    )
-    # delete specify config
-    config_parser.remove_config_data(
-        section="servers",
-        config_data={"name": "name_1"},
-        subtag="server",
-        domain="test",
-    )
-    # Get config data organized by domain
-    hosts = config_parser.get_config_data(
-        section="servers", config_class=ServerConfig, subtag="server", domain="all"
-    )
-    config_parser.print_config(hosts)
+    # Parse the arguments
+    args = parser.parse_args()
 
-    try:
-        # config_parser.init_log_from_file(
-        # config_file=XFunc.get_parent_path("config/config.xml")
-        # )
-        LOG_DEBUG("This is a debug message.")
-        LOG_INFO("This is an info message.")
-        LOG_WARNING("This is a warning message.")
-        LOG_ERROR("This is an error message.")
-        LOG_CRITICAL("This is a critical message.")
-        current_logfile = logger.get_current_logfile()
-        LOG_INFO("Current log file: {}".format(current_logfile))
-    except Exception as e:
-        logging.exception("Error: {}".format(e))
+    if 1 == args.test:
+        print("test")
+
+        # Initialize config parser
+        config_parser = XConfigParser(XFunc.get_parent_path("config/config.xml"))
+
+        # Define configuration with types and defaults
+        global_def = [
+            ("name", True, None, str),  # name, Required, default="", type=str
+            ("lang", False, 1, int),  # name, Required, default=1, type=int
+        ]
+        # Create config class
+        GlobalConfig = config_parser.create_config_class("global", global_def)
+        # Create config
+        global_config_new = GlobalConfig(name="test")
+        global_config_new = global_config_new._replace(lang=1)
+        # Set config data
+        config_parser.set_config_data(
+            section="global",
+            config_data=global_config_new,
+            create_missing=True,
+        )
+        config_parser.set_value(section="global", key="timeout", value=5)
+        # Get config
+        global_config = config_parser.get_config_data(
+            section="global",
+            config_class=GlobalConfig,
+        )
+        config_parser.print_config(global_config)
+
+        # Define configuration with types and defaults
+        server_def = [
+            ("ip", True, None, str),
+            ("port", True, 22, int),
+            ("name", False, None, str),
+            ("password", True, None, str),
+            ("deploy_dir", True, None, str),
+            ("serveraliveinterval", False, 30, int),
+        ]
+        # Create config class
+        ServerConfig = config_parser.create_config_class(
+            "ServerConfig",
+            server_def,
+        )
+        # Create config
+        config = ServerConfig(
+            ip="192.168.1.1",
+            port=23,
+            name="name_1",
+            password="password_",
+            deploy_dir="deploy_dir_",
+            serveraliveinterval=36,
+        )
+        # Set config data
+        config_parser.set_config_data(
+            section="servers",
+            config_data=config,
+            domain="test",
+            subtag="server",
+            create_missing=True,
+        )
+        # delete specify config
+        config_parser.remove_config_data(
+            section="servers",
+            config_data={"name": "name_1"},
+            domain="test",
+            subtag="server",
+        )
+        # Get config data organized by domain
+        hosts = config_parser.get_config_data(
+            section="servers", config_class=ServerConfig, subtag="server", domain="all"
+        )
+        print("hosts:{}".format(hosts))
+        # config_parser.print_config(hosts)
+
+        try:
+            # config_parser.init_log_from_file(
+            # config_file=XFunc.get_parent_path("config/config.xml")
+            # )
+            LOG_DEBUG("This is a debug message.")
+            LOG_INFO("This is an info message.")
+            LOG_WARNING("This is a warning message.")
+            LOG_ERROR("This is an error message.")
+            LOG_CRITICAL("This is a critical message.")
+            current_logfile = logger.get_current_logfile()
+            LOG_INFO("Current log file: {}".format(current_logfile))
+        except Exception as e:
+            logging.exception("Error: {}".format(e))
 
 
 # Example usage

@@ -4,6 +4,7 @@
 # -date:2025-03-18                          #
 #############################################
 
+from __future__ import print_function
 from functools import partial
 import logging
 import os
@@ -13,6 +14,11 @@ import sys
 import io
 import readline
 
+# Get the absolute path of the current file
+current_dir = os.path.dirname(os.path.abspath(__file__))
+# Add the deploy directory to sys.path
+sys.path.extend([current_dir, os.path.dirname(current_dir)])
+
 PY2 = sys.version_info[0] == 2
 PY3 = sys.version_info[0] >= 3
 
@@ -20,6 +26,31 @@ PY3 = sys.version_info[0] >= 3
 class XFunc:
     def __init__(self):
         pass
+
+    @staticmethod
+    def get_month(yyyymm, delta_months=-1):
+        yyyymm = str(yyyymm)
+        if len(yyyymm) != 6 or not yyyymm.isdigit():
+            raise ValueError("Input must be 6-digit YYYYMM format")
+
+        year = int(yyyymm[:4])
+        month = int(yyyymm[4:6])
+
+        if month < 1 or month > 12:
+            raise ValueError("Month must be between 01 and 12")
+
+        if delta_months == 0:
+            return yyyymm
+
+        total_months = year * 12 + month + delta_months
+        new_year = total_months // 12
+        new_month = total_months % 12
+
+        if new_month == 0:
+            new_year -= 1
+            new_month = 12
+
+        return "{0}{1:02d}".format(new_year, new_month)
 
     @staticmethod
     def clear_input_chache():
@@ -43,17 +74,14 @@ class XFunc:
         """
         try:
             if PY2:
-                return raw_input(prompt)  # type: ignore # Python 2
+                return raw_input(prompt)  # type: ignore
             else:
-                return input(prompt)  # Python 3
-        except KeyboardInterrupt:
+                return input(prompt)
+        except (KeyboardInterrupt, EOFError):
             XFunc.clear_input_chache()
-            if PY2:
-                print
-            else:
-                print()
             if exit_on_interrupt:
-                sys.exit(1)  # Exit with non-zero status
+                print("\nBye!")
+                sys.exit(0)  # Exit with non-zero status
             return None
         finally:
             XFunc.clear_input_chache()
@@ -243,13 +271,18 @@ class XFunc:
 
         while True:
             try:
-                ui = XFunc.user_input(prompt=prompt)
+                ui = XFunc.user_input(
+                    prompt=prompt,
+                    exit_on_interrupt=(defaultvalue is None),
+                )
 
                 # Handle quit
-                if not ui or ui.lower() == "q":
+                if not ui:
                     return defaultvalue
 
-                ui = ui.strip()
+                ui = str(ui).strip()
+                if ui.lower() == "q":
+                    exit(1)
 
                 # Type conversion
                 if type_ is not None:
@@ -288,6 +321,7 @@ class XFunc:
                     return ui
 
             except (KeyboardInterrupt, EOFError):
+                sys.exit(1)
                 return defaultvalue
 
     @staticmethod
@@ -373,7 +407,7 @@ class XFunc:
         Raises:
             ValueError: If invalid IP version specified
         """
-        validator = validators.get(opt.lower())
+        validator = validators.get(opt)
         if validator:
             return validator()
         logging.warning("Invalid IP version specified. Use 'ipv4' or 'ipv6'")
@@ -410,7 +444,7 @@ class XValidator(object):
         r"(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)"
         r"$"
     )
-    # TODO ipv6 regex need to be correct
+    # ipv6 regex pattern
     IPV6_REGEX = re.compile(
         r"^"
         r"(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\."
