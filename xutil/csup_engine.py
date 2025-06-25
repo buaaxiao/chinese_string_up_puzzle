@@ -12,11 +12,19 @@ current_dir = os.path.dirname(os.path.abspath(__file__))
 # Add the deploy directory to sys.path
 sys.path.extend([current_dir, os.path.dirname(current_dir)])
 
+
 from xcommon.xlog import *
 from xcommon.xconfig import *
 from xcommon.xfunc import *
 from xutil.csup_sqlgenerator import CSqlGenerator
 from xutil.csup_enum import *
+
+
+class PinyinStruct:
+    def __init__(self, pinyin, lzpinyin, mulpinyin):
+        self.pinyin = pinyin
+        self.lzpinyin = lzpinyin
+        self.mulpinyin = mulpinyin
 
 
 # '''成语引擎'''
@@ -75,8 +83,13 @@ class Chinese_string_engine(object):
     def get_nextIdiom(self, idiom, except_dict=[], limit_flag=1):
         results = []
         promote_results = []
+        pinyin_data = PinyinStruct(
+            pinyin="".join(pypinyin.pinyin(idiom)[-1]),
+            lzpinyin=pypinyin.lazy_pinyin(idiom)[-1],
+            mulpinyin=pypinyin.pinyin(idiom[-1], heteronym=True)[0],
+        )
         strsql = self.cSqlGenerator.gen_sql(
-            self.puzzle_module, idiom, except_dict, limit_flag
+            self.puzzle_module, idiom, pinyin_data, except_dict, limit_flag
         )
 
         LOG_INFO(strsql)

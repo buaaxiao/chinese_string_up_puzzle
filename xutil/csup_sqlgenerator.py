@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding : utf-8-*-
 
-import pypinyin
 import os
 import sys
 
@@ -43,15 +42,18 @@ class CSqlGenerator:
         strsql += " limit 1"
         return strsql
 
-    def gen_sql(self, module, idiom, except_dict, limit_flag, *args, **kwargs):
+    def gen_sql(
+        self, module, idiom, pinyin_data, except_dict, limit_flag, *args, **kwargs
+    ):
         strsql = ""
         self.idiom = idiom
         if 0 == len(idiom):
             return strsql
 
-        self.pinyin = "".join(pypinyin.pinyin(idiom)[-1])
-        self.lzpinyin = pypinyin.lazy_pinyin(idiom)[-1]
-        self.mulpinyin = pypinyin.pinyin(idiom[-1], heteronym=True)[0]
+        # Original code
+        self.pinyin = pinyin_data.pinyin
+        self.lzpinyin = pinyin_data.lzpinyin
+        self.mulpinyin = pinyin_data.mulpinyin
 
         LOG_INFO(
             "pinyin: {}, lzpinyin: {}, mulpinyin: {}".format(
