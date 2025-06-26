@@ -13,11 +13,11 @@ current_dir = os.path.dirname(os.path.abspath(__file__))
 sys.path.extend([current_dir, os.path.dirname(current_dir)])
 
 
-from xcommon.xlog import *
-from xcommon.xconfig import *
-from xcommon.xfunc import *
-from xutil.csup_sqlgenerator import CSqlGenerator
-from xutil.csup_enum import *
+from x_common.xLog import *
+from x_common.xConfig import *
+from x_common.xFunc import *
+from x_util.csup_sqlgenerator import CSqlGenerator
+from x_util.csup_enum import *
 
 
 class PinyinStruct:

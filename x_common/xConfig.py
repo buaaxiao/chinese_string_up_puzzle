@@ -20,11 +20,11 @@ current_dir = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(current_dir)
 sys.path.append(os.path.dirname(current_dir))
 
-from xfunc import *
+from xFunc import *
 
 
 # Global logger instance
-from xlog import XLogger
+from xLog import XLogger
 
 logger = XLogger()
 

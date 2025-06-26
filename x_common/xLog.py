@@ -20,7 +20,7 @@ current_dir = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(current_dir)
 sys.path.append(os.path.dirname(current_dir))
 
-from xfunc import XFunc
+from xFunc import XFunc
 import inspect
 
 
@@ -153,7 +153,7 @@ class XLogger(object):
             self._cleanup_old_logs()
 
     def init_log_from_file(self, config_file, user_class=None, log_format=None):
-        from xconfig import XConfigParser
+        from xConfig import XConfigParser
 
         config_parser = XConfigParser(config_file)
         log_configs = config_parser.get_config_data(

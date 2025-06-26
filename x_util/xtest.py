@@ -16,9 +16,9 @@ current_dir = os.path.dirname(os.path.abspath(__file__))
 # Add the deploy directory to sys.path to allow importing local modules
 sys.path.extend([current_dir, os.path.dirname(current_dir)])
 
-# Import the XClean class from the xcommon module
-from xcommon.xclean import XClean
-from xcommon.xfunc import XFunc
+# Import the XClean class from the x_common module
+from x_common.xClean import XClean
+from x_common.xFunc import XFunc
 
 
 def main():
@@ -110,10 +110,10 @@ def main():
     ]
 
     # Initialize the XClean class
-    xclean = XClean()
+    xClean = XClean()
     # Set the default function for the clean command
     clean_parser.set_defaults(
-        func=lambda args: xclean.clean_files_and_dirs(items_to_clean)
+        func=lambda args: xClean.clean_files_and_dirs(items_to_clean)
     )
 
     # Test command: Run test scripts

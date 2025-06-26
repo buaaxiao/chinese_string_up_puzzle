@@ -9,9 +9,9 @@ current_dir = os.path.dirname(os.path.abspath(__file__))
 # Add the deploy directory to sys.path
 sys.path.extend([current_dir, os.path.dirname(current_dir)])
 
-from xcommon.xlog import *
-from xcommon.xconfig import *
-from xutil.csup_enum import enum_Puzzle_Module
+from x_common.xLog import *
+from x_common.xConfig import *
+from x_util.csup_enum import enum_Puzzle_Module
 
 
 class CSqlGenerator:

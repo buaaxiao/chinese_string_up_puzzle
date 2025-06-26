@@ -16,7 +16,7 @@ current_dir = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(current_dir)
 sys.path.append(os.path.dirname(current_dir))
 
-from xfunc import XFunc
+from xFunc import XFunc
 
 
 class XClean:
@@ -97,10 +97,6 @@ class XClean:
         # Collect items to delete
         items_to_delete = []
         for root, dirs, files in os.walk(root_dir):
-            hide_dirs_to_deal = [
-                ".remote_login",
-            ]
-
             # Skip hidden directories
             filtered = [
                 d
@@ -234,9 +230,9 @@ def main():
     ]
 
     # Initialize XClean
-    xclean = XClean()
+    xClean = XClean()
     # Clean files and directories
-    xclean.clean_files_and_dirs(items_to_clean)
+    xClean.clean_files_and_dirs(items_to_clean)
 
 
 if __name__ == "__main__":

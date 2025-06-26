@@ -5,12 +5,11 @@ from PyQt6.QtGui import *
 from PyQt6.QtCore import *
 from PyQt6.QtWidgets import *
 from PyQt6.QtCore import QFile
-from xcommon.xlog import *
-from xcommon.xconfig import *
-from xcommon.xconfig import *
-from xutil.csup_enum import *
-from xutil.csup_engine import *
-from xutil.csup_def import XCSUDef
+from x_common.xLog import *
+from x_common.xConfig import *
+from x_util.csup_enum import *
+from x_util.csup_engine import *
+from x_util.csup_def import XCSUDef
 
 FINISH_TAIL = "-------结束-------"
 PROMOTE_TAIL = "-------无提示-------"

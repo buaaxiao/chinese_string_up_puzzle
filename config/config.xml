@@ -8,7 +8,7 @@
         <auto_timer_interval>0.01</auto_timer_interval>
     </common>
     <log>
-        <path>$OPEN_SOURCE/chinese_string_up_puzzle/log</path>
+        <path>$OPEN_SOURCE/XChineseStringUpPuzzle/log</path>
         <size>10</size>
         <num>5</num>
         <console_level>WARNING</console_level>
