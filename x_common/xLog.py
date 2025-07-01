@@ -20,8 +20,45 @@ current_dir = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(current_dir)
 sys.path.append(os.path.dirname(current_dir))
 
-from xFunc import XFunc
-import inspect
+from xFunc import XFunc, PY2
+
+if PY2:
+    reload(sys)  # type: ignore
+    sys.setdefaultencoding("utf-8")
+    text_type = unicode  # type: ignore
+    binary_type = str
+else:
+    text_type = str
+    binary_type = bytes
+
+
+class UTF8SafeFormatter(logging.Formatter):
+    def format(self, record):
+        message = super(UTF8SafeFormatter, self).format(record)
+        if not isinstance(message, text_type):
+            try:
+                message = message.decode("utf-8", errors="replace")
+            except (UnicodeDecodeError, AttributeError):
+                message = text_type(message, "utf-8", errors="replace")
+        return message
+
+
+class SafeStreamHandler(logging.StreamHandler):
+    def emit(self, record):
+        try:
+            message = self.format(record)
+            if not isinstance(message, text_type):
+                message = text_type(message, "utf-8", errors="replace")
+
+            if PY2:
+                message = message.encode("utf-8", errors="replace")
+
+            stream = self.stream
+            stream.write(message)
+            stream.write(self.terminator)
+            self.flush()
+        except Exception:
+            self.handleError(record)
 
 
 class XLogger(object):
@@ -49,15 +86,14 @@ class XLogger(object):
 
         # Set default user_class to caller's class name
         if user_class is None:
-            # Get the frame of the caller
-            caller_frame = inspect.currentframe().f_back
             try:
-                # Get 'self' from caller's frame
+                caller_frame = inspect.currentframe().f_back
                 caller_self = caller_frame.f_locals.get("self")
-                if caller_self is not None:
-                    user_class = caller_self.__class__.__name__
-                else:
-                    user_class = "UnknownClass"
+                user_class = (
+                    caller_self.__class__.__name__ if caller_self else "UnknownClass"
+                )
+            except Exception:
+                user_class = "UnknownClass"
             finally:
                 # Ensure frame reference is released to avoid reference cycles
                 del caller_frame
@@ -106,72 +142,44 @@ class XLogger(object):
         file_handler.setLevel(self.file_level)
         self._logger.addHandler(file_handler)
 
-        self._logger.debug(
-            "log_path: {}".format(self.logpath),
-            extra={
-                "caller_filename": os.path.abspath(__file__),
-                "caller_lineno": inspect.currentframe().f_lineno,
-            },
-        )
-        self._logger.debug(
-            "log_file: {}".format(self.log_file),
-            extra={
-                "caller_filename": os.path.abspath(__file__),
-                "caller_lineno": inspect.currentframe().f_lineno,
-            },
-        )
-        self._logger.debug(
-            "log_size: {}".format(self.log_size),
-            extra={
-                "caller_filename": os.path.abspath(__file__),
-                "caller_lineno": inspect.currentframe().f_lineno,
-            },
-        )
-        self._logger.debug(
-            "log_num: {}".format(self.log_num),
-            extra={
-                "caller_filename": os.path.abspath(__file__),
-                "caller_lineno": inspect.currentframe().f_lineno,
-            },
-        )
-        self._logger.debug(
-            "console_level: {}".format(self.console_level),
-            extra={
-                "caller_filename": os.path.abspath(__file__),
-                "caller_lineno": inspect.currentframe().f_lineno,
-            },
-        )
-        self._logger.debug(
-            "file_level: {}".format(self.file_level),
-            extra={
-                "caller_filename": os.path.abspath(__file__),
-                "caller_lineno": inspect.currentframe().f_lineno,
-            },
-        )
+        self._log_init_info()
 
         if 0 != self.log_num:
             self._cleanup_old_logs()
 
-    def init_log_from_file(self, config_file, user_class=None, log_format=None):
-        from xConfig import XConfigParser
-
-        config_parser = XConfigParser(config_file)
-        log_configs = config_parser.get_config_data(
-            section="log",
-            config_class=config_parser.create_config_class(
-                "log", XLogger.log_config_def
-            ),
+        self._logger.debug(
+            "Logger initialized successfully",
+            extra=self._get_caller_extra(1),
         )
-        print(log_configs)
 
-        log_config = (
-            log_configs.get("log", [{}])[0]  # Get first config or empty dict
-            if log_configs and isinstance(log_configs, dict)
-            else {}
-        )
-        print(log_config)
+    def _log_init_info(self):
+        debug_info = {
+            "log_path": self.logpath,
+            "log_file": self.log_file,
+            "log_size": self.log_size,
+            "log_num": self.log_num,
+            "console_level": self.log_config.console_level,
+            "file_level": self.log_config.file_level,
+        }
 
-        self.init_log(log_config, user_class, log_format)
+        for key, value in debug_info.items():
+            self._logger.debug(
+                "{}: {}".format(key, value),
+                extra=self._get_caller_extra(1),
+            )
+
+    def _get_caller_extra(self, levels_up=2):
+        current_frame = inspect.currentframe()
+        try:
+            for _ in range(levels_up):
+                if current_frame.f_back:
+                    current_frame = current_frame.f_back
+            return {
+                "caller_filename": os.path.abspath(current_frame.f_code.co_filename),
+                "caller_lineno": current_frame.f_lineno,
+            }
+        finally:
+            del current_frame
 
     def _cleanup_old_logs(self):
         """
@@ -206,6 +214,27 @@ class XLogger(object):
                     },
                 )
 
+    def init_log_from_file(self, config_file, user_class=None, log_format=None):
+        from x_common.xConfig import XConfigParser
+
+        config_parser = XConfigParser(config_file)
+        log_configs = config_parser.get_config_data(
+            section="log",
+            config_class=config_parser.create_config_class(
+                "log", XLogger.log_config_def
+            ),
+        )
+        # print(log_configs)
+
+        log_config = (
+            log_configs.get("log", [{}])[0]  # Get first config or empty dict
+            if log_configs and isinstance(log_configs, dict)
+            else {}
+        )
+        # print(log_config)
+
+        self.init_log(log_config, user_class, log_format)
+
     def get_current_logfile(self):
         """
         Get the current log file name.
@@ -213,20 +242,6 @@ class XLogger(object):
         :return: The full path of the current log file.
         """
         return self.logname
-
-    def _get_caller_info(self):
-        """Get the filename and line number of the caller."""
-        current_frame = inspect.currentframe()
-        try:
-            skip_frames = 4
-            for _ in range(skip_frames):
-                if current_frame.f_back:
-                    current_frame = current_frame.f_back
-            filename = current_frame.f_code.co_filename
-            lineno = current_frame.f_lineno
-            return os.path.abspath(filename), lineno
-        finally:
-            del current_frame
 
     def log(self, level, message, *args, **kwargs):
         """
@@ -241,10 +256,11 @@ class XLogger(object):
         extra = kwargs.pop("extra", {})
         # Ensure caller_filename and caller_lineno are set
         if "caller_filename" not in extra or "caller_lineno" not in extra:
-            caller_filename, caller_lineno = self._get_caller_info()
-            extra["caller_filename"] = caller_filename
-            extra["caller_lineno"] = caller_lineno
-        self._logger.log(level, message, *args, extra=extra, **kwargs)
+            extra = self._get_caller_extra(4)
+            # Ensure the message is a Unicode string before logging
+
+        safe_message = XFunc.ensure_text(message)
+        self._logger.log(level, safe_message, *args, extra=extra, **kwargs)
 
     # Convenience methods
     def debug(self, message, *args, **kwargs):
@@ -261,3 +277,21 @@ class XLogger(object):
 
     def critical(self, message, *args, **kwargs):
         self.log(logging.CRITICAL, message, *args, **kwargs)
+
+
+if __name__ == "__main__":
+    logger = XLogger()
+    XLogger.log_config_def
+    logger.init_log_from_file(
+        XFunc.get_parent_path("config/config.xml"),
+        user_class="demo",
+        log_format=None,
+    )
+
+    logger.info("这是一条中文日志信息")
+    logger.debug("Debug message with Chinese: 中文调试信息")
+    logger.warning("Warning with special chars: öäüß")
+    logger.error("Error message with special chars: öäüß")
+    logger.critical("Critical message with special chars: öäüß")
+    current_logfile = logger.get_current_logfile()
+    logger.warning("Current log file: {}".format(current_logfile))

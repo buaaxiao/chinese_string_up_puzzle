@@ -28,6 +28,19 @@ class XFunc:
         pass
 
     @staticmethod
+    def ensure_text(message):
+        if message is None:
+            return ""
+
+        """Convert to unicode string safely"""
+        try:
+            return str(message)
+        except UnicodeEncodeError:
+            if isinstance(message, bytes):
+                return message.decode("utf-8", errors="ignore")
+            return message.encode("utf-8", errors="ignore").decode("utf-8")
+
+    @staticmethod
     def get_month(yyyymm, delta_months=-1):
         yyyymm = str(yyyymm)
         if len(yyyymm) != 6 or not yyyymm.isdigit():
